@@ -1,0 +1,749 @@
+{% extends "base.html" %}
+
+{% block title %}Idea Flow | {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  
+  <!-- Header Title & Preset Prompt Templates Modal Trigger -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+      <h2 class="fw-bold mb-0">Idea Flow</h2>
+      <p class="text-muted small mb-0">Turn your ideas into captions, scripts and more.</p>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#historyModal" onclick="loadWorkspaceHistory()">
+        <i class="bi bi-clock-history me-1"></i> History
+      </button>
+      <button class="btn btn-navy btn-sm" data-bs-toggle="modal" data-bs-target="#templateModal">
+        <i class="bi bi-journal-bookmark-fill text-warning me-1"></i> Prompt Templates
+      </button>
+    </div>
+  </div>
+
+  <div class="ai-workspace-shell">
+    <div class="ai-workspace-tools" id="ai-tool-pills" role="tablist">
+        
+        <h6 class="fw-bold mb-3 text-muted uppercase small letter-spacing-1">
+          <i class="bi bi-tools text-warning me-1"></i> Select AI Tool
+        </h6>
+
+        <!-- Tool Pills Navigation -->
+        <!-- Tool selector is the horizontal bar; the workspace no longer uses a left sidebar. -->
+          
+          <button class="nav-link text-start d-flex align-items-center gap-2 py-2.5 {% if active_tool == 'caption' %}active{% endif %}" id="tab-caption" data-bs-toggle="pill" data-bs-target="#tool-caption" type="button" role="tab" aria-controls="tool-caption" aria-selected="true">
+            <i class="bi bi-chat-quote-fill text-warning"></i> <span>Caption Generator</span>
+          </button>
+
+          <button class="nav-link text-start d-flex align-items-center gap-2 py-2.5 {% if active_tool == 'script' %}active{% endif %}" id="tab-script" data-bs-toggle="pill" data-bs-target="#tool-script" type="button" role="tab" aria-controls="tool-script">
+            <i class="bi bi-camera-reels-fill text-info"></i> <span>Script Generator</span>
+          </button>
+
+          <button class="nav-link text-start d-flex align-items-center gap-2 py-2.5 {% if active_tool == 'hashtag' %}active{% endif %}" id="tab-hashtag" data-bs-toggle="pill" data-bs-target="#tool-hashtag" type="button" role="tab" aria-controls="tool-hashtag">
+            <i class="bi bi-hash text-success"></i> <span>Hashtag Generator</span>
+          </button>
+
+          <button class="nav-link text-start d-flex align-items-center gap-2 py-2.5 {% if active_tool == 'bio' %}active{% endif %}" id="tab-bio" data-bs-toggle="pill" data-bs-target="#tool-bio" type="button" role="tab" aria-controls="tool-bio">
+            <i class="bi bi-person-badge-fill text-primary"></i> <span>Bio Generator</span>
+          </button>
+
+          <button class="nav-link text-start d-flex align-items-center gap-2 py-2.5 {% if active_tool == 'rewrite' %}active{% endif %}" id="tab-rewrite" data-bs-toggle="pill" data-bs-target="#tool-rewrite" type="button" role="tab" aria-controls="tool-rewrite">
+            <i class="bi bi-arrow-repeat text-warning"></i> <span>Rewrite Content</span>
+          </button>
+          <button class="nav-link text-start d-flex align-items-center gap-2 py-2.5 {% if active_tool == 'seo' %}active{% endif %}" id="tab-seo" data-bs-toggle="pill" data-bs-target="#tool-seo" type="button" role="tab" aria-controls="tool-seo">
+            <i class="bi bi-search text-warning"></i> <span>SEO Keywords</span>
+          </button>
+
+        </div>
+
+    </div>
+
+    <div class="ai-workspace-form">
+      <div class="small text-muted fw-bold mb-2"><i class="bi bi-sliders text-warning me-1"></i> TOOL SETTINGS</div>
+      <!-- Dynamic Form Fields for Active Tool -->
+      <div class="tab-content" id="ai-tool-tab-content">
+
+          <!-- 1. Caption Generator -->
+          <div class="tab-pane fade {% if active_tool == 'caption' %}show active{% endif %}" id="tool-caption">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Topic or Keyword</label>
+              <input type="text" id="caption-topic" class="form-control" placeholder="e.g. 5 Morning Habits for Productivity">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Target Platform</label>
+              <select id="caption-platform" class="form-select">
+                <option value="Instagram">Instagram</option>
+                <option value="TikTok">TikTok</option>
+                <option value="LinkedIn">LinkedIn</option>
+                <option value="Twitter / X">Twitter / X</option>
+                <option value="YouTube Shorts">YouTube Shorts</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Tone of Voice</label>
+              <select id="caption-tone" class="form-select">
+                <option value="Engaging & Viral">Engaging & Viral</option>
+                <option value="Educational & Professional">Educational & Professional</option>
+                <option value="Witty & Conversational">Witty & Conversational</option>
+                <option value="Urgent & Promotional">Urgent & Promotional</option>
+              </select>
+            </div>
+            <button class="btn btn-gold w-100 py-2" onclick="triggerAIGeneration('caption')">
+              <i class="bi bi-magic me-1"></i> Generate Caption
+            </button>
+          </div>
+
+          <!-- 2. Script Generator -->
+          <div class="tab-pane fade {% if active_tool == 'script' %}show active{% endif %}" id="tool-script">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Video Concept / Topic</label>
+              <input type="text" id="script-topic" class="form-control" placeholder="e.g. How I Built a $10k/mo Business">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Video Format</label>
+              <select id="script-format" class="form-select">
+                <option value="Reels / Shorts">Short Form (Reels/Shorts)</option>
+                <option value="YouTube Longform">YouTube Longform</option>
+                <option value="Podcast Intro">Podcast Intro</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Duration</label>
+              <select id="script-length" class="form-select">
+                <option value="60 Seconds">60 Seconds</option>
+                <option value="30 Seconds">30 Seconds</option>
+                <option value="3 Minutes">3 Minutes</option>
+              </select>
+            </div>
+            <button id="generate-script-btn" class="btn btn-gold w-100 py-2" type="button">
+              <i class="bi bi-camera-reels me-1"></i> Generate Script
+            </button>
+          </div>
+
+          <!-- 3. Hashtag Generator -->
+          <div class="tab-pane fade {% if active_tool == 'hashtag' %}show active{% endif %}" id="tool-hashtag">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Main Keyword / Topic</label>
+              <input type="text" id="hashtag-topic" class="form-control" placeholder="e.g. Graphic Design">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Platform</label>
+              <select id="hashtag-platform" class="form-select">
+                <option value="Instagram">Instagram</option>
+                <option value="TikTok">TikTok</option>
+                <option value="YouTube">YouTube</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Creator Niche</label>
+              <input type="text" id="hashtag-niche" class="form-control" placeholder="e.g. Tech & AI">
+            </div>
+            <button class="btn btn-gold w-100 py-2" onclick="triggerAIGeneration('hashtag')">
+              <i class="bi bi-hash me-1"></i> Generate Hashtags
+            </button>
+          </div>
+
+          <!-- 4. Bio Generator -->
+          <div class="tab-pane fade {% if active_tool == 'bio' %}show active{% endif %}" id="tool-bio">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Industry / Niche</label>
+              <input type="text" id="bio-niche" class="form-control" placeholder="e.g. AI Fitness Coach">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Personality</label>
+              <select id="bio-personality" class="form-select">
+                <option value="Witty & Bold">Witty & Bold</option>
+                <option value="Professional Authority">Professional Authority</option>
+                <option value="Friendly & Minimalist">Friendly & Minimalist</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Call To Action (CTA)</label>
+              <input type="text" id="bio-cta" class="form-control" placeholder="e.g. Claim Free Ebook">
+            </div>
+            <button class="btn btn-gold w-100 py-2" onclick="triggerAIGeneration('bio')">
+              <i class="bi bi-person-badge me-1"></i> Generate Bios
+            </button>
+          </div>
+
+          <!-- 5. Rewrite Content -->
+          <div class="tab-pane fade {% if active_tool == 'rewrite' %}show active{% endif %}" id="tool-rewrite">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Paste Original Draft</label>
+              <textarea id="rewrite-content" class="form-control" rows="4" placeholder="Paste your text here to rewrite..."></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Target Tone</label>
+              <select id="rewrite-style" class="form-select">
+                <option value="Engaging & Persuasive">Engaging & Persuasive</option>
+                <option value="Concise & Punchy">Concise & Punchy</option>
+                <option value="Formal & Executive">Formal & Executive</option>
+              </select>
+            </div>
+            <button class="btn btn-gold w-100 py-2" onclick="triggerAIGeneration('rewrite')">
+              <i class="bi bi-arrow-repeat me-1"></i> Rewrite Text
+            </button>
+          </div>
+          <!-- SEO Keywords -->
+          <div class="tab-pane fade {% if active_tool == 'seo' %}show active{% endif %}" id="tool-seo">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Topic or Product</label>
+              <input type="text" id="seo-topic" class="form-control" placeholder="e.g. Wireless Noise Canceling Headphones">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Industry Sector</label>
+              <input type="text" id="seo-industry" class="form-control" placeholder="e.g. Consumer Electronics">
+            </div>
+            <button class="btn btn-gold w-100 py-2" onclick="triggerAIGeneration('seo')">
+              <i class="bi bi-search me-1"></i> Generate SEO Report
+            </button>
+          </div>
+
+      </div>
+    </div>
+
+    <!-- Unified ChatGPT/Gemini/WhatsApp-style conversation workspace -->
+    <div class="ai-workspace-output">
+      <div class="card-glass border-0 shadow-sm p-4 h-100 d-flex flex-column ai-unified-workspace">
+        <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <span class="p-2 rounded bg-warning-subtle text-warning"><i class="bi bi-stars fs-5"></i></span>
+            <div>
+              <h5 class="fw-bold mb-0">CreatorOS AI Chat</h5>
+              <span class="text-muted extra-small" id="output-meta">Send a message or generate content to start the conversation</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" id="btn-favorite" onclick="toggleCurrentFavorite()" disabled title="Add to Favorites" aria-label="Add to Favorites">
+              <i class="bi bi-star" id="favorite-icon"></i>
+            </button>
+            <button class="btn btn-gold btn-sm" id="btn-copy" onclick="copyOutputText()" disabled>
+              <i class="bi bi-clipboard-check me-1"></i> Copy
+            </button>
+          </div>
+        </div>
+
+        <div id="ai-loading-spinner" class="d-none text-center py-3 text-muted small">
+          <span class="spinner-border spinner-border-sm text-warning me-2" role="status" aria-hidden="true"></span>Generating…
+        </div>
+        <div id="ai-chat-messages" class="ai-conversation-thread flex-grow-1" aria-live="polite">
+          <div class="ai-chat-empty text-muted small">Tell me what you want in your own words. I can create, change, rewrite, brainstorm, or start over.</div>
+        </div>
+
+        <form id="ai-chat-form" class="ai-chat-bar mt-3" onsubmit="sendAIChat(event)">
+          <div class="ai-chat-bar-input">
+            <textarea id="ai-chat-input" class="ai-chat-textarea" rows="1" maxlength="2000" autocomplete="off" placeholder="Message CreatorOS AI…"></textarea>
+          </div>
+          <button type="submit" class="ai-chat-send-icon" id="ai-chat-send" title="Send" aria-label="Send" disabled><i class="bi bi-send-fill"></i></button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal for Preset Prompt Templates -->
+<div class="modal fade" id="templateModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content card-glass border-0 shadow-lg">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title fw-bold"><i class="bi bi-journal-bookmark-fill text-warning me-2"></i>Preset Prompt Templates</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-3">
+          {% for tpl in templates %}
+          <div class="col-md-6">
+            <div class="card-glass h-100 p-3 hover-elevate">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="badge bg-warning-subtle text-warning">{{ tpl.category }}</span>
+                <a class="template-open-btn btn btn-sm p-0 text-primary"
+                   href="{{ url_for('ai.workspace', tool=({'tpl_viral_hook':'script','tpl_insta_story':'caption','tpl_youtube_intro':'script','tpl_linkedin_thought':'rewrite','tpl_bio_creator':'bio','tpl_thread_post':'caption','tpl_seo_blog':'seo','tpl_podcast_script':'script'}[tpl.id])) }}&template_id={{ tpl.id|urlencode }}"
+                   title="Open this template in the correct tool"
+                   aria-label="Open this template in the correct tool">
+                  <i class="bi bi-arrow-right-circle-fill"></i>
+                </a>
+              </div>
+              <h6 class="fw-bold mb-1">{{ tpl.name }}</h6>
+              <p class="text-muted extra-small mb-0">{{ tpl.prompt }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for saved Idea Flow history -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content card-glass border-0 shadow-lg">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title fw-bold"><i class="bi bi-clock-history text-warning me-2"></i>Idea Flow History</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div id="workspace-history-list" class="workspace-history-grid">
+          <div class="text-center text-muted py-5">Loading your saved prompts and responses…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+<style>
+.ai-unified-workspace{min-height:650px;}
+.ai-conversation-thread{min-height:330px;max-height:520px;overflow-y:auto;padding:10px 8px 16px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth;}
+.ai-chat-message{display:flex;width:100%;font-size:.9rem;line-height:1.55;}
+.ai-chat-message.user{justify-content:flex-end;}
+.ai-chat-message.assistant{justify-content:flex-start;}
+.ai-chat-bubble{max-width:min(82%,720px);padding:11px 14px;border-radius:17px;white-space:pre-wrap;word-break:break-word;box-shadow:0 1px 3px rgba(15,23,42,.08);}
+.ai-chat-message.user .ai-chat-bubble{background:#e8f2ff;color:#173d70;border:1px solid #8bb8f0;border-right:5px solid #3478c8;border-bottom-right-radius:5px;}
+.ai-chat-message.assistant .ai-chat-bubble{background:linear-gradient(135deg,#fff7df,#ffedbd);color:#563b0a;border:1px solid #edc96c;border-left:5px solid #d49a18;border-bottom-left-radius:5px;box-shadow:0 4px 14px rgba(130,91,15,.12);}
+/* Strongly distinguish user prompts from generated content, including over theme styles. */
+#ai-chat-messages .ai-chat-message.user .ai-chat-bubble{background:#e8f2ff!important;color:#173d70!important;border:1px solid #8bb8f0!important;border-right:5px solid #3478c8!important;}
+#ai-chat-messages .ai-chat-message.assistant .ai-chat-bubble{background:#fff0c2!important;color:#563b0a!important;border:1px solid #edc96c!important;border-left:5px solid #d49a18!important;box-shadow:0 4px 14px rgba(130,91,15,.12)!important;}
+#ai-chat-messages .ai-chat-message.assistant .ai-chat-label{color:#805500!important;font-weight:800!important;}
+#ai-chat-messages .ai-chat-message.user .ai-chat-label{color:#245fa8!important;font-weight:800!important;}
+.ai-chat-message.user .ai-chat-label{color:#245fa8}.ai-chat-message.assistant .ai-chat-label{color:#94640b}.ai-chat-message.assistant .generated-title{color:#704b06}.ai-chat-bubble .generated-title{font-weight:900;letter-spacing:.02em}.ai-chat-bubble .prompt-caption{font-size:.72rem;line-height:1.45;opacity:.85;margin-top:3px}
+.ai-chat-message .ai-chat-label{display:block;font-size:.68rem;font-weight:700;opacity:.7;margin-bottom:4px;}
+.ai-chat-bar{display:flex;align-items:flex-end;gap:9px;padding:7px;border:1px solid #dbe3ee;border-radius:25px;background:#f8fafc;}
+.ai-chat-bar-input{flex:1;min-width:0;}
+.ai-chat-textarea{display:block;width:100%;min-height:42px;max-height:130px;resize:none;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:10px 13px!important;font-family:inherit;color:var(--text-main,#1f2937);}
+.ai-chat-textarea::placeholder{color:#94a3b8;}
+.ai-chat-send-icon{flex:0 0 42px;width:42px;height:42px;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#f5b73b;color:#fff;}
+.ai-chat-send-icon:disabled{opacity:.45;cursor:not-allowed;}
+.ai-chat-empty{margin:auto;text-align:center;padding:30px 15px;}
+#ai-loading-spinner{flex:0 0 auto;}
+.workspace-history-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-height:62vh;overflow-y:auto;padding:2px;}
+.workspace-history-card{border:1px solid var(--border-color,#e2e8f0);border-radius:16px;padding:14px;background:var(--bg-primary,#fff);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;}
+.workspace-history-card:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(15,23,42,.10);border-color:#f0b429;}
+.workspace-history-card .history-prompt{font-weight:700;color:#1e293b;margin-bottom:7px;}
+.workspace-history-card .history-response{color:#64748b;font-size:.78rem;line-height:1.45;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;}
+.workspace-history-card .history-meta{font-size:.68rem;color:#94a3b8;margin-bottom:8px;}
+@media(max-width:768px){.workspace-history-grid{grid-template-columns:1fr;}.ai-chat-bubble{max-width:90%;}.ai-conversation-thread{min-height:280px;}}
+</style>
+{% block scripts %}
+<script>
+  let currentRecordId = null;
+  let currentIsFavorite = false;
+  let currentAIOutput = '';
+  let currentAITool = {{ active_tool|tojson }};
+  const SELECTED_TEMPLATE_PROMPT = {{ (selected_template.prompt if selected_template else '')|tojson }};
+  let aiGenerationCount = 0;
+  const CREATOR_LANGUAGE = {{ (current_user.language or 'English')|tojson }};
+  document.addEventListener('DOMContentLoaded', () => {
+    initAIChat();
+    const generateScriptButton = document.getElementById('generate-script-btn');
+    if (generateScriptButton) {
+      generateScriptButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        triggerAIGeneration('script');
+      });
+    }
+    const pillButtons = document.querySelectorAll('#ai-tool-pills button[data-bs-toggle="pill"]');
+    pillButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetPaneId = (btn.getAttribute('data-bs-target') || '').replace('#tool-', '');
+
+        // Each AI tool is an independent workspace. Never carry the previous tool's
+        // searched topic, text, generated result, or chat into the next tool.
+        clearToolInputs();
+        clearWorkspaceResult();
+        currentAITool = targetPaneId || 'caption';
+
+        pillButtons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        document.querySelectorAll('#ai-tool-tab-content .tab-pane').forEach(p => p.classList.remove('show', 'active'));
+        btn.classList.add('active'); btn.setAttribute('aria-selected', 'true');
+        const targetPane = document.querySelector(btn.getAttribute('data-bs-target'));
+        if (targetPane) targetPane.classList.add('show', 'active');
+      });
+    });
+
+    // If the user arrived here from a Prompt Templates arrow, put the exact
+    // template sentence into the appropriate input. Nothing is generated automatically.
+    if (SELECTED_TEMPLATE_PROMPT) {
+      const selectedInput = {
+        caption: 'caption-topic',
+        script: 'script-topic',
+        hashtag: 'hashtag-topic',
+        bio: 'bio-niche',
+        rewrite: 'rewrite-content',
+        seo: 'seo-topic'
+      }[currentAITool];
+      const input = selectedInput ? document.getElementById(selectedInput) : null;
+      if (input) {
+        input.value = SELECTED_TEMPLATE_PROMPT;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.focus();
+        try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
+      }
+    }
+  });
+
+  function buildSpecificPrompt(toolType, payload) {
+    const topic = String(payload.topic || payload.content || payload.niche || payload.industry || '').trim() || 'my topic';
+    const platform = payload.platform || 'Instagram';
+    const tone = payload.tone || 'engaging';
+    if (toolType === 'caption') return `Create a fresh ${platform} caption about ${topic} in a ${tone.toLowerCase()} voice. Make it feel specific, memorable, and natural, with a strong opening and a simple closing line. Keep it ready to post.`;
+    if (toolType === 'script') return `Please write a ${payload.length || 'short'} ${payload.format || 'video'} script about ${topic} for ${payload.audience || 'creators'}. Give it a clear opening, a smooth flow, and a natural ending.`;
+    if (toolType === 'hashtag') return `Please suggest relevant ${platform} hashtags for ${topic}${payload.niche ? ` in the ${payload.niche} niche` : ''}.`;
+    if (toolType === 'bio') return `Please write 3 concise creator bio options for ${topic}, with a ${payload.personality || 'friendly'} feel and this call to action: ${payload.cta || 'Follow for more'}.`;
+    if (toolType === 'rewrite') return `Please rewrite this text in a ${payload.style || 'clear and engaging'} style while keeping its meaning:\n${payload.content || ''}`;
+    if (toolType === 'seo') return `Please suggest useful SEO keywords for ${topic}${payload.industry ? ` in ${payload.industry}` : ''}, grouped by relevance.`;
+    return `Please help me with this: ${topic}`;
+  }
+
+  function triggerAIGeneration(toolType) {
+    const loadingSpinner = document.getElementById('ai-loading-spinner');
+    const metaBox = document.getElementById('output-meta');
+    const copyBtn = document.getElementById('btn-copy');
+    const favBtn = document.getElementById('btn-favorite');
+
+    // Keep the latest result only as context for a repeat Rewrite. It is never
+    // submitted as the new source when the user is starting a fresh generation.
+    const previousOutputBeforeRequest = currentAIOutput;
+    let payload = { tool_type: toolType, previous_output: previousOutputBeforeRequest, variation: ++aiGenerationCount };
+
+    if (toolType === 'caption') {
+      payload.topic = document.getElementById('caption-topic').value || 'Content Creation';
+      payload.platform = document.getElementById('caption-platform').value;
+      payload.tone = document.getElementById('caption-tone').value;
+    } else if (toolType === 'script') {
+      payload.topic = document.getElementById('script-topic').value || 'AI Tools';
+      payload.format = document.getElementById('script-format').value;
+      payload.length = document.getElementById('script-length').value;
+      payload.audience = 'Creators';
+    } else if (toolType === 'hashtag') {
+      payload.topic = document.getElementById('hashtag-topic').value || 'Design';
+      payload.platform = document.getElementById('hashtag-platform').value;
+      payload.niche = document.getElementById('hashtag-niche').value || 'Tech';
+    } else if (toolType === 'bio') {
+      payload.niche = document.getElementById('bio-niche').value || 'Marketing';
+      payload.personality = document.getElementById('bio-personality').value;
+      payload.cta = document.getElementById('bio-cta').value || 'Click Link';
+    } else if (toolType === 'rewrite') {
+      payload.content = document.getElementById('rewrite-content').value || 'Sample text';
+      payload.style = document.getElementById('rewrite-style').value;
+      // Only use the last AI result as rewrite context when the textarea still
+      // contains that same result. If the user pasted new text, rewrite the new text.
+      const rewriteInput = (payload.content || '').trim();
+      const lastOutput = (previousOutputBeforeRequest || '').trim();
+      if (lastOutput && rewriteInput === lastOutput) payload.previous_output = lastOutput;
+      else payload.previous_output = '';
+    } else if (toolType === 'seo') {
+      payload.topic = document.getElementById('seo-topic').value || 'CreatorOS';
+      payload.industry = document.getElementById('seo-industry').value || 'Tech';
+    }
+
+    const specificPrompt = buildSpecificPrompt(toolType, payload);
+    appendAIChatMessage('user', specificPrompt);
+    loadingSpinner.classList.remove('d-none');
+
+    fetch('/ai/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      loadingSpinner.classList.add('d-none');
+
+      if (data.success) {
+        currentAIOutput = data.response;
+        currentAITool = data.tool_type;
+        // First generation replaces the placeholder. Every subsequent Rewrite is
+        // appended as a separate version so the user can compare the results.
+        renderAIOutput(data.response, 'append', toolType === 'rewrite' ? 'Rewrite Version' : 'Generated Result');
+        setAIChatEnabled(true);
+        metaBox.innerText = `Generated at ${data.created_at} | Tool: ${data.tool_type.toUpperCase()}`;
+        
+        currentRecordId = data.id;
+        currentIsFavorite = false;
+        
+        copyBtn.disabled = false;
+        favBtn.disabled = false;
+        document.getElementById('favorite-icon').className = 'bi bi-star';
+
+        showToast('AI content generated successfully!', 'success');
+      } else {
+        appendAIChatMessage('assistant', `Error: ${data.error}`);
+        showToast('Failed to generate content.', 'danger');
+      }
+    })
+    .catch(err => {
+      loadingSpinner.classList.add('d-none');
+      appendAIChatMessage('assistant', `Connection Error: ${err}`);
+      showToast('Network error while connecting to AI generator.', 'danger');
+    });
+  }
+
+  // Render markdown-style bold text as real HTML bold text instead of showing asterisks.
+  // Example: **HOOK** becomes <strong>HOOK</strong>.
+  function escapeAIHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+  function renderAIOutput(text, mode='replace', label='AI Result') {
+    if (mode === 'replace') {
+      // Do not erase the conversation. Every generation is another turn.
+    }
+    appendAIChatMessage('assistant', text);
+  }
+
+  // Clear every tool's user-entered search/content when moving to another tool.
+  // Selects return to their first/default option; text fields and textareas become blank.
+  function clearToolInputs() {
+    const root = document.querySelector('.ai-workspace-form');
+    if (!root) return;
+    root.querySelectorAll('input[type="text"], textarea').forEach(input => {
+      input.value = '';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    root.querySelectorAll('select').forEach(select => {
+      select.selectedIndex = 0;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+
+  // Switching AI tools starts a clean workspace result.
+  function clearWorkspaceResult() {
+    currentRecordId = null; currentIsFavorite = false; currentAIOutput = '';
+    const meta=document.getElementById('output-meta');
+    const copy=document.getElementById('btn-copy'); const fav=document.getElementById('btn-favorite');
+    clearAIChat();
+    setAIChatEnabled(true);
+    meta.innerText='Send a message or generate content to start the conversation';
+    copy.disabled=true; fav.disabled=true;
+    document.getElementById('favorite-icon').className='bi bi-star';
+  }
+  function copyOutputText() {
+    if (!currentAIOutput) return;
+    navigator.clipboard.writeText(currentAIOutput).then(() => {
+      showToast('Copied latest AI response!', 'info');
+    });
+  }
+
+  function toggleCurrentFavorite() {
+    if (!currentRecordId) return;
+
+    fetch(`/ai/favorite/${currentRecordId}`, { method: 'POST' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          currentIsFavorite = data.is_favorite;
+          const favIcon = document.getElementById('favorite-icon');
+          if (currentIsFavorite) {
+            favIcon.className = 'bi bi-star-fill text-warning';
+            showToast('Added to Favorites!', 'success');
+          } else {
+            favIcon.className = 'bi bi-star';
+            showToast('Removed from Favorites.', 'info');
+          }
+        }
+      });
+  }
+
+  const aiChatHistory = [];
+  function appendAIChatMessage(role, text) {
+    const box = document.getElementById('ai-chat-messages');
+    if (!box) return;
+    const empty = box.querySelector('.ai-chat-empty');
+    if (empty) empty.remove();
+
+    const isUser = role === 'user';
+    const row = document.createElement('div');
+    row.className = `ai-chat-message ${role}`;
+    row.style.cssText = 'display:flex;width:100%;margin:10px 0;';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'ai-chat-bubble';
+    // Inline styles keep the two message types visibly distinct even if theme CSS overrides them.
+    bubble.style.cssText = isUser
+      ? 'display:block;box-sizing:border-box;width:100%;max-width:100%;padding:14px 16px;background:#e4f0ff;color:#173d70;border:1px solid #8bb8f0;border-left:6px solid #3478c8;border-radius:12px;box-shadow:0 3px 12px rgba(52,120,200,.10);white-space:normal;overflow-wrap:anywhere;'
+      : 'display:block;box-sizing:border-box;width:100%;max-width:100%;padding:14px 16px;background:#fff0c2;color:#563b0a;border:1px solid #edc96c;border-left:6px solid #d49a18;border-radius:12px;box-shadow:0 3px 12px rgba(130,91,15,.10);white-space:normal;overflow-wrap:anywhere;';
+
+    const label = document.createElement('span');
+    label.className = 'ai-chat-label';
+    label.textContent = isUser ? 'YOUR PROMPT' : 'GENERATED VERSION';
+    label.style.cssText = isUser
+      ? 'display:block;margin-bottom:8px;font-size:.72rem;font-weight:800;letter-spacing:.04em;color:#245fa8;'
+      : 'display:block;margin-bottom:8px;font-size:.72rem;font-weight:800;letter-spacing:.04em;color:#805500;';
+    bubble.appendChild(label);
+
+    const content = document.createElement('div');
+    content.textContent = String(text || '');
+    content.style.cssText = 'white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;';
+    bubble.appendChild(content);
+    row.appendChild(bubble);
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function setAIChatEnabled(enabled) {
+    const input = document.getElementById('ai-chat-input');
+    const send = document.getElementById('ai-chat-send');
+    if (input) input.disabled = false;
+    if (send) send.disabled = !input || !input.value.trim();
+  }
+  function clearAIChat() {
+    aiChatHistory.length = 0;
+    const box = document.getElementById('ai-chat-messages');
+    if (box) box.innerHTML = '<div class="ai-chat-empty text-muted small">Tell me what you want in your own words. I can create, change, rewrite, brainstorm, or start over.</div>';
+  }
+
+  function useAIChatSuggestion(button) {
+    const input = document.getElementById('ai-chat-input');
+    if (!input || input.disabled) return;
+    input.value = button.textContent.trim();
+    input.dispatchEvent(new Event('input', {bubbles:true}));
+    input.focus();
+  }
+
+  function getAIConversationContext() {
+    const value = id => document.getElementById(id)?.value || '';
+    if (currentAITool === 'caption') return {
+      topic: value('caption-topic'), platform: value('caption-platform'), tone: value('caption-tone')
+    };
+    if (currentAITool === 'script') return {topic: value('script-topic'), platform: value('script-format'), tone: value('script-length')};
+    if (currentAITool === 'hashtag') return {topic: value('hashtag-topic'), platform: value('hashtag-platform'), tone: value('hashtag-niche')};
+    if (currentAITool === 'bio') return {topic: value('bio-niche'), tone: value('bio-personality')};
+    if (currentAITool === 'rewrite') return {topic: value('rewrite-content'), tone: value('rewrite-style')};
+    if (currentAITool === 'seo') return {topic: value('seo-topic'), tone: value('seo-industry')};
+    return {};
+  }
+
+  async function sendAIChat(event) {
+    event.preventDefault();
+    const input = document.getElementById('ai-chat-input');
+    const send = document.getElementById('ai-chat-send');
+    const question = (input?.value || '').trim();
+    if (!question || !send) return;
+
+    appendAIChatMessage('user', question);
+    aiChatHistory.push({role:'user', content:question});
+    input.value = '';
+    input.dispatchEvent(new Event('input', {bubbles:true}));
+    send.disabled = true;
+    send.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>';
+
+    try {
+      const res = await fetch('/ai/copilot', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          question,
+          history: aiChatHistory.slice(-8),
+          current_output: currentAIOutput,
+          current_tool: currentAITool,
+          current_context: getAIConversationContext()
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.answer || 'Request failed');
+
+      if (data.updated_output) {
+        currentAIOutput = data.updated_output;
+        currentAITool = data.tool_type || currentAITool;
+        currentRecordId = data.id || currentRecordId;
+        currentIsFavorite = false;
+        appendAIChatMessage('assistant', currentAIOutput);
+        const favIcon = document.getElementById('favorite-icon');
+        if (favIcon) favIcon.className = 'bi bi-star';
+        const copyBtn = document.getElementById('btn-copy');
+        const favBtn = document.getElementById('btn-favorite');
+        if (copyBtn) copyBtn.disabled = false;
+        if (favBtn) favBtn.disabled = !currentRecordId;
+      }
+      const answer = data.updated_output || data.answer || 'Here is the answer.';
+      if (!data.updated_output) appendAIChatMessage('assistant', answer);
+      aiChatHistory.push({role:'assistant', content:answer});
+    } catch (err) {
+      appendAIChatMessage('assistant', `Sorry, I could not process that request. ${err.message || ''}`.trim());
+    } finally {
+      send.disabled = !(input?.value || '').trim();
+      send.innerHTML = '<i class="bi bi-send-fill"></i>';
+    }
+  }
+
+  function initAIChat() {
+    const input = document.getElementById('ai-chat-input');
+    const send = document.getElementById('ai-chat-send');
+    if (!input || !send) return;
+    setAIChatEnabled(true);
+    input.addEventListener('input', () => {
+      send.disabled = !input.value.trim();
+      input.style.height='auto';
+      input.style.height=Math.min(input.scrollHeight,120)+'px';
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!send.disabled) document.getElementById('ai-chat-form').requestSubmit();
+      }
+    });
+  }
+  async function loadWorkspaceHistory() {
+    const list = document.getElementById('workspace-history-list');
+    if (!list) return;
+    list.innerHTML = '<div class="text-center text-muted py-5">Loading your saved prompts and responses…</div>';
+    try {
+      const res = await fetch('/ai/history/data');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to load history');
+      if (!data.records?.length) {
+        list.innerHTML = '<div class="text-center text-muted py-5">No saved AI history yet.</div>';
+        return;
+      }
+      list.innerHTML = data.records.map(rec => {
+        const prompt = escapeAIHtml(rec.prompt || 'Untitled prompt');
+        const response = escapeAIHtml(rec.response || '');
+        const tool = escapeAIHtml((rec.tool_type || 'AI').toUpperCase());
+        const date = escapeAIHtml(rec.created_at || '');
+        return `<div class="workspace-history-card" onclick="openHistoryInChat(${rec.id})" data-history-id="${rec.id}">
+          <div class="history-meta"><span class="badge bg-warning-subtle text-warning me-2">${tool}</span>${date}</div>
+          <div class="history-prompt">${prompt}</div>
+          <div class="history-response">${response}</div>
+          <div class="text-primary extra-small fw-bold mt-2">Open in chat →</div>
+        </div>`;
+      }).join('');
+      window.creatorOSHistory = data.records;
+    } catch (err) {
+      list.innerHTML = `<div class="text-center text-danger py-5">Could not load history. ${escapeAIHtml(err.message || '')}</div>`;
+    }
+  }
+
+  function openHistoryInChat(id) {
+    const rec = (window.creatorOSHistory || []).find(item => Number(item.id) === Number(id));
+    if (!rec) return;
+    currentRecordId = rec.id;
+    currentIsFavorite = !!rec.is_favorite;
+    currentAIOutput = rec.response || '';
+    currentAITool = rec.tool_type || currentAITool;
+    clearAIChat();
+    appendAIChatMessage('user', rec.prompt || 'Previous AI request');
+    appendAIChatMessage('assistant', rec.response || '');
+    document.getElementById('output-meta').innerText = `${rec.created_at || ''} | Tool: ${(rec.tool_type || 'AI').toUpperCase()}`;
+    document.getElementById('btn-copy').disabled = !currentAIOutput;
+    document.getElementById('btn-favorite').disabled = !currentRecordId;
+    document.getElementById('favorite-icon').className = currentIsFavorite ? 'bi bi-star-fill text-warning' : 'bi bi-star';
+    const modalEl = document.getElementById('historyModal');
+    if (typeof bootstrap !== 'undefined') {
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+    }
+    document.getElementById('ai-chat-messages')?.scrollTo({top:document.getElementById('ai-chat-messages').scrollHeight, behavior:'smooth'});
+  }
+
+</script>
+{% endblock %}

@@ -1,0 +1,7 @@
+CREATIVEOS LOCAL WEBSITE NAME
+
+The browser address bar is controlled by the local server name, not the page title.
+To use a branded local address instead of 127.0.0.1, run Setup_CreativeOS_Local_Name.bat as Administrator once.
+Then start CreatorOS normally and open: http://creativeos.test:5000
+
+This is a name on this Windows computer only; it is not a public website domain. A public URL requires hosting and a domain.

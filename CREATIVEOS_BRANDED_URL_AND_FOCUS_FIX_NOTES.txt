@@ -1,0 +1,23 @@
+CreatorOS branded module URL and Focus Veil update
+
+Changes:
+- Added canonical module URLs: /launchpad, /idea-flow, /media-bloom, /clip-nest,
+  /day-canvas, /craft-nest, /growth-lens, /pick-perfect, /nexus, and /persona.
+- Existing legacy module URLs redirect to their branded equivalents, preserving query strings.
+- Standardized browser tab titles to include the module name and app title:
+  CreatorOS – AI Workspace for Content Creators.
+- Corrected module tab names for Idea Flow, Clip Nest, Growth Lens, and Persona.
+- Reworked Focus Veil to blur the full background and reveal a large softly feathered
+  rounded subject area (not a small circular cut-out). Focus size changes the area, and
+  the blur amount scales with image resolution. Clicking the image positions the clear area.
+
+Local development note:
+- A browser address bar cannot display a brand name unless a hostname/domain is configured.
+  The canonical paths above change the path after the host, not the host itself. For local use,
+  configure a local hostname (such as creativeos.test) in Windows hosts/DNS and run the app on it.
+
+Validation:
+- Python source compilation passed.
+- Pick Perfect inline JavaScript syntax check passed.
+- Flask runtime route test could not be run in this packaging environment because Flask is not installed.
+- Please test the local app in your browser before replacing your working copy.

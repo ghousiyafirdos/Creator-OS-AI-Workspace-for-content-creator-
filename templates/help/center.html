@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Help Center & Feedback | {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  
+  <!-- Header Title -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+      <h2 class="fw-bold mb-0">Help Center & Community Feedback</h2>
+      <p class="text-muted small mb-0">Frequently asked questions, support inquiry, platform documentation & feedback.</p>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+      <a href="#feedback-section" class="btn btn-gold btn-sm">
+        <i class="bi bi-star-fill me-1"></i> Give Feedback
+      </a>
+      <a href="#contact-section" class="btn btn-navy btn-sm">
+        <i class="bi bi-envelope-paper me-1"></i> Contact Support
+      </a>
+    </div>
+  </div>
+
+  <!-- Row 1: FAQ Accordion & About CreatorOS Card -->
+  <div class="row g-4 mb-4">
+    
+    <!-- FAQ Accordion -->
+    <div class="col-lg-7">
+      <div class="card-glass border-0 p-4 h-100">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-patch-question-fill text-warning me-2"></i>Frequently Asked Questions</h5>
+          <span class="badge bg-secondary-subtle text-secondary">5 Core FAQs</span>
+        </div>
+
+        <div class="accordion accordion-flush" id="faqAccordion">
+          {% for faq in faqs %}
+          <div class="accordion-item bg-transparent border-bottom">
+            <h2 class="accordion-header" id="heading-{{ loop.index }}">
+              <button class="accordion-button collapsed bg-transparent text-main fw-bold small py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}">
+                <i class="bi bi-question-circle text-warning me-2"></i> {{ faq.question }}
+              </button>
+            </h2>
+            <div id="collapse-{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body text-muted small pt-0 pb-3">
+                {{ faq.answer }}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- About CreatorOS Card -->
+    <div class="col-lg-5">
+      <div class="card-glass border-0 p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-inline-flex align-items-center gap-2 bg-warning-subtle text-warning p-2 px-3 rounded-pill mb-3">
+            <i class="bi bi-cpu-fill"></i> <strong class="small">CreatorOS Platform Architecture</strong>
+          </div>
+          <h4 class="fw-bold mb-2">CreatorOS – Idea Flow for Content Creators</h4>
+          <p class="text-muted small mb-3">
+            CreatorOS is a production-quality BCA Final Year Project built with Python Flask, MySQL/SQLite, Bootstrap 5, and specialized AI algorithms designed to help digital creators generate content, schedule posts, and track growth.
+          </p>
+
+          <div class="p-3 rounded bg-surface-elevated mb-3">
+            <div class="row g-2 extra-small text-muted">
+              <div class="col-6"><i class="bi bi-check-circle-fill text-success me-1"></i> Python Flask Backend</div>
+              <div class="col-6"><i class="bi bi-check-circle-fill text-success me-1"></i> 14 Normalized Tables</div>
+              <div class="col-6"><i class="bi bi-check-circle-fill text-success me-1"></i> Navy & Gold Theme</div>
+              <div class="col-6"><i class="bi bi-check-circle-fill text-success me-1"></i></div>
+              <div class="col-6"><i class="bi bi-check-circle-fill text-success me-1"></i> Offline AI Fallback</div>
+              <div class="col-6"><i class="bi bi-check-circle-fill text-success me-1"></i> Chart.js Insights</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-top pt-3 text-muted extra-small d-flex justify-content-between">
+          <span>Version: 1.0.0 Pro</span>
+          <span>Environment: Production Ready</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Row 2: Contact Form & Feedback Submission Widget -->
+  <div class="row g-4">
+    
+    <!-- Contact Support Form -->
+    <div class="col-lg-6" id="contact-section">
+      <div class="card-glass border-0 p-4">
+        <h5 class="fw-bold mb-1"><i class="bi bi-headset text-warning me-2"></i>Contact Support Team</h5>
+        <p class="text-muted small mb-4">Have questions or need technical support? Send us a message.</p>
+
+        <form action="{{ url_for('help.contact') }}" method="POST">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Your Name</label>
+              <input type="text" name="name" class="form-control" placeholder="Alex Rivera" value="{{ current_user.full_name if current_user.is_authenticated else '' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Email Address</label>
+              <input type="email" name="email" class="form-control" placeholder="alex@creatoros.ai" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Subject</label>
+            <input type="text" name="subject" class="form-control" placeholder="e.g. Question about draft manager">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Message / Inquiry Details</label>
+            <textarea name="message" class="form-control" rows="4" placeholder="Describe your issue or question in detail..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-gold w-100 py-2">
+            <i class="bi bi-send-fill me-1"></i> Submit Support Inquiry
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- User Feedback Widget -->
+    <div class="col-lg-6" id="feedback-section">
+      <div class="card-glass border-0 p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <h5 class="fw-bold mb-1"><i class="bi bi-star-fill text-warning me-2"></i>Submit Platform Feedback</h5>
+          <p class="text-muted small mb-4">Rate your experience and share thoughts to help us improve CreatorOS.</p>
+
+          <form action="{{ url_for('help.submit_feedback') }}" method="POST">
+            
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Star Rating</label>
+              <div class="d-flex align-items-center gap-2">
+                <select name="rating" class="form-select" style="max-width: 160px;">
+                  <option value="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
+                  <option value="4">⭐⭐⭐⭐ (4 - Very Good)</option>
+                  <option value="3">⭐⭐⭐ (3 - Good)</option>
+                  <option value="2">⭐⭐ (2 - Needs Work)</option>
+                  <option value="1">⭐ (1 - Poor)</option>
+                </select>
+                <span class="text-muted extra-small">Overall Experience</span>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Feedback Category</label>
+              <select name="category" class="form-select">
+                <option value="General">General Platform</option>
+                <option value="AI Tools">Idea Flow Tools</option>
+                <option value="Planner">Content Planner</option>
+                <option value="Drafts">Craft Nest</option>
+                <option value="Feature Request">Feature Request</option>
+                <option value="Bug Report">Bug Report</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Comments & Suggestions</label>
+              <textarea name="comments" class="form-control" rows="3" placeholder="Tell us what you love or what we can improve..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-navy w-100 py-2">
+              <i class="bi bi-check-circle-fill text-warning me-1"></i> Submit Feedback
+            </button>
+          </form>
+        </div>
+
+        {% if recent_feedback %}
+        <div class="mt-4 pt-3 border-top">
+          <h6 class="fw-bold small mb-2 text-muted">Your Submitted Feedback History</h6>
+          {% for fb in recent_feedback %}
+          <div class="p-2 rounded bg-surface-elevated mb-2 extra-small">
+            <div class="d-flex justify-content-between">
+              <strong class="text-warning">{'⭐' * fb.rating} ({{ fb.category }})</strong>
+              <span class="text-muted">{{ fb.created_at.strftime('%b %d') }}</span>
+            </div>
+            <div class="text-muted text-truncate">{{ fb.comments }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account | {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-9 col-lg-6">
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm mb-3" role="alert">
+              <i class="bi bi-info-circle-fill me-2"></i>{{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="card-glass border-0 shadow-lg p-4 p-md-5">
+        <div class="text-center mb-4">
+          <div class="d-inline-flex align-items-center justify-content-center bg-warning-subtle text-warning p-3 rounded-circle mb-3">
+            <i class="bi bi-person-plus-fill fs-2"></i>
+          </div>
+          <h2 class="fw-bold mb-1">Create CreatorOS Account</h2>
+          <p class="text-muted small">Join thousands of creators using AI to scale content</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}" id="register-form" novalidate>
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            <label for="full_name" class="form-label font-weight-bold small">Full Name</label>
+            <div class="input-group">
+              <span class="input-group-text bg-surface-elevated border-end-0 text-muted"><i class="bi bi-person"></i></span>
+              {{ form.full_name(class="form-control border-start-0 ps-0", placeholder="Alex Rivera", id="full_name") }}
+            </div>
+            {% for error in form.full_name.errors %}
+              <div class="text-danger extra-small mt-1">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label font-weight-bold small">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text bg-surface-elevated border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+              {{ form.email(class="form-control border-start-0 ps-0", placeholder="alex@creatoros.ai", id="email") }}
+            </div>
+            {% for error in form.email.errors %}
+              <div class="text-danger extra-small mt-1">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- Password Field with Real-time Strength Meter -->
+          <div class="mb-3">
+            <label for="password" class="form-label font-weight-bold small">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-surface-elevated border-end-0 text-muted"><i class="bi bi-shield-lock"></i></span>
+              {{ form.password(class="form-control border-start-0 border-end-0 ps-0", placeholder="Create strong password", id="password", oninput="evaluatePasswordStrength()") }}
+              <button class="btn btn-outline-secondary border-start-0" type="button" onclick="togglePasswordVisibility('password', 'reg-pass-icon')">
+                <i class="bi bi-eye-slash" id="reg-pass-icon"></i>
+              </button>
+            </div>
+            {% for error in form.password.errors %}
+              <div class="text-danger extra-small mt-1">{{ error }}</div>
+            {% endfor %}
+
+            <!-- Password Strength Meter Bar -->
+            <div class="progress mt-2" style="height: 6px;">
+              <div class="progress-bar bg-danger" id="strength-bar" role="progressbar" style="width: 0%;"></div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <span class="extra-small text-muted">Strength: <strong id="strength-label" class="text-danger">Weak</strong></span>
+            </div>
+
+            <!-- Password Criteria Checklist -->
+            <div class="p-2 rounded bg-surface-elevated mt-2 border small">
+              <div class="row g-1 extra-small text-muted">
+                <div class="col-6" id="rule-length"><i class="bi bi-x-circle text-danger me-1"></i> Min 8 Chars</div>
+                <div class="col-6" id="rule-upper"><i class="bi bi-x-circle text-danger me-1"></i> Uppercase (A-Z)</div>
+                <div class="col-6" id="rule-lower"><i class="bi bi-x-circle text-danger me-1"></i> Lowercase (a-z)</div>
+                <div class="col-6" id="rule-number"><i class="bi bi-x-circle text-danger me-1"></i> Number (0-9)</div>
+                <div class="col-12" id="rule-special"><i class="bi bi-x-circle text-danger me-1"></i> Special Char (!@#$%^&*)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="confirm_password" class="form-label font-weight-bold small">Confirm Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-surface-elevated border-end-0 text-muted"><i class="bi bi-check2-circle"></i></span>
+              {{ form.confirm_password(class="form-control border-start-0 ps-0", placeholder="Re-enter password", id="confirm_password") }}
+            </div>
+            {% for error in form.confirm_password.errors %}
+              <div class="text-danger extra-small mt-1">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <button type="submit" class="btn btn-gold w-100 py-2.5 fs-6 mb-3">
+            <i class="bi bi-person-check-fill"></i> Create Account
+          </button>
+        </form>
+
+        <div class="text-center pt-3 border-top">
+          <p class="text-muted small mb-0">
+            Already have a CreatorOS account? 
+            <a href="{{ url_for('auth.login') }}" class="text-warning fw-bold text-decoration-none ms-1">Sign In</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function togglePasswordVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'bi bi-eye';
+    } else {
+      input.type = 'password';
+      icon.className = 'bi bi-eye-slash';
+    }
+  }
+
+  function evaluatePasswordStrength() {
+    const pass = document.getElementById('password').value;
+    const bar = document.getElementById('strength-bar');
+    const label = document.getElementById('strength-label');
+
+    const rules = {
+      length: pass.length >= 8,
+      upper: /[A-Z]/.test(pass),
+      lower: /[a-z]/.test(pass),
+      number: /[0-9]/.test(pass),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(pass)
+    };
+
+    updateRule('rule-length', rules.length, 'Min 8 Chars');
+    updateRule('rule-upper', rules.upper, 'Uppercase (A-Z)');
+    updateRule('rule-lower', rules.lower, 'Lowercase (a-z)');
+    updateRule('rule-number', rules.number, 'Number (0-9)');
+    updateRule('rule-special', rules.special, 'Special Char (!@#$%^&*)');
+
+    const score = Object.values(rules).filter(Boolean).length;
+    
+    if (score <= 2) {
+      bar.style.width = '33%';
+      bar.className = 'progress-bar bg-danger';
+      label.innerText = 'Weak';
+      label.className = 'text-danger';
+    } else if (score <= 4) {
+      bar.style.width = '66%';
+      bar.className = 'progress-bar bg-warning';
+      label.innerText = 'Medium';
+      label.className = 'text-warning';
+    } else {
+      bar.style.width = '100%';
+      bar.className = 'progress-bar bg-success';
+      label.innerText = 'Strong & Secure';
+      label.className = 'text-success';
+    }
+  }
+
+  function updateRule(elementId, isValid, text) {
+    const el = document.getElementById(elementId);
+    if (isValid) {
+      el.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> ${text}`;
+    } else {
+      el.innerHTML = `<i class="bi bi-x-circle text-danger me-1"></i> ${text}`;
+    }
+  }
+</script>
+{% endblock %}

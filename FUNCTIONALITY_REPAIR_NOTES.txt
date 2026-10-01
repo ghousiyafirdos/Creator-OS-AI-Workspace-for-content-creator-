@@ -1,0 +1,20 @@
+CreatorOS functionality repair notes
+====================================
+
+Changes in this pass
+--------------------
+1. Repaired the Launchpad dashboard template structure. The activity checklist CSS, markup, and JavaScript had been placed inside the HTML title block. They are now rendered inside the page content, where the activity buttons can find their modal and handlers.
+2. Removed the invalid placement of that page UI from the document title, preserving the visible Launchpad title.
+
+Validation performed
+--------------------
+- Python source compilation passed for app.py and the app package.
+- static/js/main.js passed Node syntax validation.
+
+Important limitation
+--------------------
+A full click-by-click browser test was not possible in this environment because Flask and the project's Python dependencies are not installed and package installation is unavailable. Therefore this archive is a first repair pass, not a claim that every control in every module has been runtime-verified. Buttons that depend on API credentials, browser media codecs, database configuration, or user-uploaded files still need to be tested in the user's local environment.
+
+Run locally
+-----------
+Install requirements.txt, configure .env/database settings, then run app.py. Test each module with real files and verify save/download operations.

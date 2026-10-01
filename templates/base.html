@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ app_title }}{% endblock %}</title>
+  
+  <!-- Meta SEO Tags -->
+  <meta name="description" content="CreatorOS - Next-generation AI-powered workspace for content creators. Generate scripts, schedule posts, manage drafts, and analyze growth.">
+  <meta name="keywords" content="CreatorOS, AI Content Generator, Content Planner, Script Generator, Social Media Insights">
+  <meta name="author" content="CreatorOS AI Team">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Custom CreatorOS Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% if request.endpoint in ['auth.login', 'auth.register', 'auth.forgot_password'] %}auth-background{% endif %}">
+
+  <!-- 1. Splash Screen -->
+  <div id="splash-screen">
+    <div class="splash-logo">Creator<span>OS</span></div>
+    <div class="splash-loader mb-3"></div>
+    <div class="text-white-50 small font-monospace">Loading Idea Flow...</div>
+  </div>
+
+  <div class="app-container{% if not current_user.is_authenticated %} unauthenticated-layout{% endif %}">
+    {% if current_user.is_authenticated %}
+    <div class="sidebar-edge-trigger" aria-hidden="true"></div>
+
+    <!-- 2. Left Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand" aria-label="CreatorOS">
+          <i class="bi bi-cpu-fill text-warning"></i>
+          <span>Creator</span>OS
+          <span class="sidebar-brand-badge">v{{ app_version }}</span>
+        </div>
+        <button type="button" class="sidebar-lock-btn" id="sidebar-lock-btn" title="Keep sidebar open" aria-label="Keep sidebar open" aria-pressed="false">
+          <i class="bi bi-pin-angle"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core Navigation</div>
+        <a href="{{ url_for('main.dashboard') }}" class="nav-item-link {% if request.endpoint in ['main.index', 'main.dashboard'] %}active{% endif %}" aria-label="Launchpad">
+          <i class="bi bi-grid-1x2-fill"></i>
+          <span>Launchpad</span>
+        </a>
+
+        <div class="nav-section-title">AI Engine</div>
+        <a href="{{ url_for('ai.workspace') }}" class="nav-item-link {% if request.endpoint == 'ai.workspace' %}active{% endif %}">
+          <i class="bi bi-magic"></i>
+          <span>Idea Flow</span>
+        </a>
+        <a href="{{ url_for('pick_perfect') }}" class="nav-item-link {% if request.endpoint in ('images.thumbnails', 'pick_perfect') %}active{% endif %}">
+          <i class="bi bi-images"></i>
+          <span>Pick Perfect</span>
+        </a>
+        <a href="{{ url_for('media.assets') }}" class="nav-item-link {% if request.endpoint == 'media.assets' %}active{% endif %}">
+          <i class="bi bi-collection-play-fill"></i>
+          <span>Media Bloom</span>
+        </a>
+        <a href="{{ url_for('video_editor.editor') }}" class="nav-item-link {% if request.endpoint == 'video_editor.editor' %}active{% endif %}">
+          <i class="bi bi-film"></i>
+          <span>Clip Nest</span>
+        </a>
+<div class="nav-section-title">Management</div>
+        <a href="{{ url_for('planner.calendar') }}" class="nav-item-link {% if request.endpoint == 'planner.calendar' %}active{% endif %}">
+          <i class="bi bi-calendar3"></i>
+          <span>Day Canvas</span>
+        </a>
+        <a href="{{ url_for('drafts.manager') }}" class="nav-item-link {% if request.endpoint == 'drafts.manager' %}active{% endif %}">
+          <i class="bi bi-folder2-open"></i>
+          <span>Craft Nest</span>
+        </a>
+        <a href="{{ url_for('analytics.dashboard') }}" class="nav-item-link {% if request.endpoint == 'analytics.dashboard' %}active{% endif %}">
+          <i class="bi bi-graph-up-arrow"></i>
+          <span>Insights</span>
+        </a>
+        <a href="{{ url_for('ai.chatbot') }}" class="nav-item-link creatoros-hub-nav {% if request.endpoint in ['ai.chatbot', 'ai.chatbot_message'] %}active{% endif %}">
+          <i class="bi bi-stars"></i>
+          <span>Nexus</span>
+        </a>
+        <a href="{{ url_for('profile.settings') }}" class="nav-item-link {% if request.endpoint == 'profile.settings' %}active{% endif %}">
+          <i class="bi bi-person-circle"></i>
+          <span>Persona</span>
+        </a>
+
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-preview">
+          <div class="d-flex align-items-center gap-2 flex-grow-1">
+            <form id="globalProfilePhotoForm" action="{{ url_for('profile.upload_photo') }}" method="POST" enctype="multipart/form-data" class="d-none">
+              <input id="globalProfilePhotoInput" type="file" name="profile_pic" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp">
+              <input type="hidden" name="return_to" value="{{ request.path }}">
+            </form>
+            <div class="profile-avatar profile-avatar-static" title="Profile picture" aria-label="Profile picture">
+              {% if current_user.profile_pic and current_user.profile_pic != 'default_avatar.png' %}
+                <img src="{{ url_for('static', filename=current_user.profile_pic) }}" alt="Profile photo">
+              {% else %}
+                {{ current_user.full_name[0] | upper }}
+              {% endif %}
+            </div>
+            <div class="overflow-hidden flex-grow-1" title="Profile name">
+              <div class="fw-bold text-white small text-truncate">{{ current_user.full_name }}</div>
+            </div>
+          </div>
+          <a href="{{ url_for('auth.logout') }}" class="text-danger ms-1" title="Sign Out">
+            <i class="bi bi-power fs-5"></i>
+          </a>
+        </div>
+      </div>
+    </aside>
+    {% endif %}
+
+    <!-- 3. Main Wrapper -->
+    <div class="main-wrapper">
+      
+      <!-- Top Navbar -->
+      <header class="top-navbar">
+        <div class="d-flex align-items-center gap-3">
+          {% if current_user.is_authenticated %}
+          <button class="btn text-white p-0 d-lg-none" id="sidebar-toggle">
+            <i class="bi bi-list fs-3"></i>
+          </button>
+          {% endif %}
+        </div>
+
+        <div class="navbar-actions">
+          <div class="d-none d-lg-flex align-items-center gap-2 text-muted small me-2">
+            <i class="bi bi-clock"></i>
+            <span id="live-clock">--:--:--</span>
+          </div>
+
+          {% if request.endpoint == 'ai.chatbot' %}
+          <button class="recent-history-link" id="recent-history-toggle" type="button" title="Open Recent History">
+            <i class="bi bi-clock-history"></i><span>Recent History</span>
+          </button>
+          {% endif %}
+
+        </div>
+      </header>
+
+      <!-- Main Body Content -->
+      <main class="content-body">
+        {% set module_heroes = {
+          'ai.workspace': ('Idea Flow', 'Turn your ideas into content.', 'bi-stars'),
+          'media.assets': ('Media Bloom', 'Organize all your creative media.', 'bi-collection-play'),
+          'images.thumbnails': ('Pick Perfect', 'Edit and enhance your images.', 'bi-image'),
+          'video_editor.editor': ('Clip Nest', 'Create and edit videos.', 'bi-camera-reels'),
+          'drafts.manager': ('Craft Nest', 'Keep your drafts and creative work together.', 'bi-journal-richtext'),
+          'drafts.recycle_bin': ('Craft Nest', 'Review and restore your removed drafts.', 'bi-journal-richtext'),
+          'planner.calendar': ('Day Canvas', 'Shape your plans and make room for every idea.', 'bi-calendar3'),
+          'ai.chatbot': ('Nexus', 'Your connected creative companion.', 'bi-stars'),
+          'ai.chatbot_message': ('Nexus', 'Your connected creative companion.', 'bi-stars'),
+          'ai.history': ('Idea Flow', 'Return to your previous creative sessions.', 'bi-clock-history'),
+          'profile.settings': ('Persona', 'Make your workspace feel like yours.', 'bi-person-circle')
+        } %}
+        {% if request.endpoint in module_heroes %}
+          <section class="module-art-hero" aria-label="{{ module_heroes[request.endpoint][0] }} introduction">
+            <img src="{{ url_for('static', filename='assets/creatoros-module-hero.jpeg') }}" alt="Creator working at a laptop in a softly lit creative studio">
+            <div class="module-art-copy">
+              <span class="module-art-eyebrow"><i class="bi {{ module_heroes[request.endpoint][2] }}"></i> CREATOROS</span>
+              <h1>{{ module_heroes[request.endpoint][0] }}</h1>
+              <p>{{ module_heroes[request.endpoint][1] }}</p>
+              <span class="module-art-spark" aria-hidden="true">✦</span>
+            </div>
+          </section>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+
+      <!-- Toast Container for Notifications -->
+      <div id="toast-container" class="toast-container-custom">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <div class="toast align-items-center {{ 'bg-success text-white' if category == 'success' else 'bg-warning text-dark' if category == 'warning' else 'bg-danger text-white' if category == 'danger' else 'bg-dark text-white' }} border-0 show shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+              <div class="d-flex"><div class="toast-body font-weight-bold"><i class="bi bi-info-circle-fill me-2"></i>{{ message }}</div><button type="button" class="btn-close {{ 'btn-close-white' if category != 'warning' else '' }} me-2 m-auto" onclick="this.closest('.toast').remove()" aria-label="Close"></button></div>
+            </div>
+          {% endfor %}
+        {% endwith %}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CreatorOS custom confirmation dialog (never uses browser confirm(), so no localhost/IP title is shown) -->
+  <div id="creatoros-confirm" class="creatoros-confirm-overlay" aria-hidden="true">
+    <div class="creatoros-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="creatoros-confirm-title">
+      <div class="creatoros-confirm-icon"><i class="bi bi-question-circle-fill"></i></div>
+      <div class="creatoros-confirm-content">
+        <h5 id="creatoros-confirm-title">Confirm action</h5>
+        <p id="creatoros-confirm-message"></p>
+      </div>
+      <div class="creatoros-confirm-actions">
+        <button type="button" id="creatoros-confirm-cancel" class="btn btn-outline-secondary">Cancel</button>
+        <button type="button" id="creatoros-confirm-ok" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/bootstrap.bundle.min.js"></script>
+  <!-- Custom App JS -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+<script>
+/* CreatorOS UI translations. English is the default; selecting a language translates
+   the fixed interface labels without changing user-created content. */
+(function(){
+  const LANG = {{ (current_user.language or 'English')|tojson if current_user.is_authenticated else '"English"' }};
+  const keys = [
+    "Core Navigation","Haven","AI Engine","Idea Flow","Images & Thumbnails","Vault",
+    "Motion","Management","Tempo","Ink","Insights","Profile Settings","Sign Out",
+    "Creator Hub AI","CreatorOS assistant","Account Preferences & Profile Details","Profile & Platform Settings",
+    "Manage your profile picture, display name, preferred language and account settings.","Full Display Name",
+    "Language Selection","Security & Password","Save Changes",
+    "Sign Out of Workspace","Preferred Language:","Joined CreatorOS:","Verified","Admin Control Panel",
+    "Caption Generator","Script Generator","Hashtag Generator","Bio Generator","Rewrite Content",
+    "SEO Keywords","Topic or Keyword","Target Platform","Tone of Voice",
+    "Generate Caption","Video Concept / Topic","Video Format","Duration","Generate Script",
+    "Main Keyword / Topic","Platform","Creator Niche","Generate Hashtags","Industry / Niche",
+    "Personality","Call To Action (CTA)","Generate Bios","Paste Original Draft","Target Tone",
+    "Rewrite Text","Topic or Product","Industry Sector",
+    "Generate SEO Report","AI Generation Output","Select a tool and click generate","Copy",
+    "Preset Prompt Templates","Ask about CreatorOS...","Recreate",
+    "Send","Speak","Listening...","Generating AI response...","Add to Favorites","Generated AI content","Ask Creator Hub AI","Creator Hub AI conversation"
+  ];
+  const T = {
+    English: keys.reduce((o,k)=>(o[k]=k,o),{}),
+    Hindi: {
+      "Core Navigation":"मुख्य नेविगेशन","Haven":"डैशबोर्ड","AI Engine":"AI इंजन","Idea Flow":"Idea Flow",
+      "Images & Thumbnails":"इमेज और थंबनेल","Vault":"मीडिया और एसेट्स","Motion":"वीडियो एडिटर",
+      "Management":"प्रबंधन","Tempo":"कैलेंडर","Ink":"ड्राफ्ट मैनेजर","Insights":"एनालिटिक्स",
+      "Profile Settings":"प्रोफ़ाइल सेटिंग्स","Sign Out":"साइन आउट","Creator Hub AI":"Creator Hub AI",
+      "CreatorOS assistant":"CreatorOS सहायक","Account Preferences & Profile Details":"खाता प्राथमिकताएँ और प्रोफ़ाइल विवरण",
+      "Profile & Platform Settings":"प्रोफ़ाइल और प्लेटफ़ॉर्म सेटिंग्स","Full Display Name":"पूरा नाम",
+      "Language Selection":"भाषा चयन","Default Theme Selection":"डिफ़ॉल्ट थीम","Security & Password":"सुरक्षा और पासवर्ड",
+      "Save Changes":"परिवर्तन सहेजें","Sign Out of Workspace":"वर्कस्पेस से साइन आउट","Preferred Language:":"पसंदीदा भाषा:",
+      "Joined CreatorOS:":"CreatorOS में शामिल हुए:","Verified":"सत्यापित","Admin Control Panel":"एडमिन कंट्रोल पैनल",
+      "Caption Generator":"कैप्शन जनरेटर","Script Generator":"स्क्रिप्ट जनरेटर","Hashtag Generator":"हैशटैग जनरेटर",
+      "Bio Generator":"बायो जनरेटर","Rewrite Content":"कंटेंट फिर से लिखें",
+      "SEO Keywords":"SEO कीवर्ड","Topic or Keyword":"विषय या कीवर्ड","Target Platform":"लक्षित प्लेटफ़ॉर्म",
+      "Tone of Voice":"लेखन शैली","Generate Caption":"कैप्शन बनाएँ","Video Concept / Topic":"वीडियो विषय",
+      "Video Format":"वीडियो प्रारूप","Duration":"अवधि","Generate Script":"स्क्रिप्ट बनाएँ",
+      "Main Keyword / Topic":"मुख्य कीवर्ड / विषय","Platform":"प्लेटफ़ॉर्म","Creator Niche":"क्रिएटर क्षेत्र",
+      "Generate Hashtags":"हैशटैग बनाएँ","Industry / Niche":"उद्योग / क्षेत्र","Personality":"व्यक्तित्व",
+      "Call To Action (CTA)":"कॉल टू एक्शन (CTA)","Generate Bios":"बायो बनाएँ","Paste Original Draft":"मूल ड्राफ्ट पेस्ट करें",
+      "Target Tone":"लक्षित शैली","Rewrite Text":"टेक्स्ट फिर से लिखें","Topic or Product":"विषय या उत्पाद","Industry Sector":"उद्योग क्षेत्र",
+      "Generate SEO Report":"SEO रिपोर्ट बनाएँ","AI Generation Output":"AI आउटपुट","Select a tool and click generate":"टूल चुनें और जनरेट करें",
+      "Copy":"कॉपी","Preset Prompt Templates":"प्रीसेट प्रॉम्प्ट टेम्पलेट्स","Ask about CreatorOS...":"CreatorOS के बारे में पूछें...","Recreate":"फिर से बनाएँ","Send":"भेजें","Speak":"बोलें","Listening...":"सुन रहा है..."
+    },
+    Bengali: {"Haven":"ড্যাশবোর্ড","Idea Flow":"Idea Flow","Images & Thumbnails":"ছবি ও থাম্বনেইল","Vault":"মিডিয়া ও অ্যাসেট","Motion":"ভিডিও এডিটর","Tempo":"ক্যালেন্ডার","Ink":"ড্রাফট ম্যানেজার","Insights":"অ্যানালিটিক্স","Profile Settings":"প্রোফাইল সেটিংস","Sign Out":"সাইন আউট","Language Selection":"ভাষা নির্বাচন","Save Changes":"পরিবর্তন সংরক্ষণ","Full Display Name":"পূর্ণ নাম","Security & Password":"নিরাপত্তা ও পাসওয়ার্ড","Caption Generator":"ক্যাপশন জেনারেটর","Script Generator":"স্ক্রিপ্ট জেনারেটর","Hashtag Generator":"হ্যাশট্যাগ জেনারেটর","Bio Generator":"বায়ো জেনারেটর","Rewrite Content":"কনটেন্ট পুনর্লিখুন","SEO Keywords":"SEO কীওয়ার্ড","Recreate":"আবার তৈরি করুন","Send":"পাঠান","Speak":"বলুন"},
+    Marathi: {"Haven":"डॅशबोर्ड","Idea Flow":"Idea Flow","Images & Thumbnails":"प्रतिमा आणि थंबनेल्स","Vault":"मीडिया आणि अॅसेट्स","Motion":"व्हिडिओ एडिटर","Tempo":"कॅलेंडर","Ink":"ड्राफ्ट व्यवस्थापक","Insights":"विश्लेषण","Profile Settings":"प्रोफाइल सेटिंग्ज","Sign Out":"साइन आउट","Language Selection":"भाषा निवड","Save Changes":"बदल जतन करा","Full Display Name":"पूर्ण नाव","Security & Password":"सुरक्षा आणि पासवर्ड","Caption Generator":"कॅप्शन जनरेटर","Script Generator":"स्क्रिप्ट जनरेटर","Hashtag Generator":"हॅशटॅग जनरेटर","Bio Generator":"बायो जनरेटर","Rewrite Content":"कंटेंट पुन्हा लिहा","SEO Keywords":"SEO कीवर्ड","Recreate":"पुन्हा तयार करा","Send":"पाठवा","Speak":"बोला"},
+    Telugu: {"Haven":"డ్యాష్‌బోర్డ్","Idea Flow":"Idea Flow","Images & Thumbnails":"చిత్రాలు & థంబ్‌నెయిల్స్","Vault":"మీడియా & ఆస్తులు","Motion":"వీడియో ఎడిటర్","Tempo":"క్యాలెండర్","Ink":"డ్రాఫ్ట్ మేనేజర్","Insights":"విశ్లేషణలు","Profile Settings":"ప్రొఫైల్ సెట్టింగ్స్","Sign Out":"సైన్ అవుట్","Language Selection":"భాష ఎంపిక","Save Changes":"మార్పులను సేవ్ చేయండి","Full Display Name":"పూర్తి పేరు","Security & Password":"భద్రత & పాస్‌వర్డ్","Caption Generator":"క్యాప్షన్ జనరేటర్","Script Generator":"స్క్రిప్ట్ జనరేటర్","Hashtag Generator":"హ్యాష్‌ట్యాగ్ జనరేటర్","Bio Generator":"బయో జనరేటర్","Rewrite Content":"కంటెంట్ రీరైట్","SEO Keywords":"SEO కీవర్డ్స్","Recreate":"మళ్లీ రూపొందించు","Send":"పంపు","Speak":"మాట్లాడు","Generating AI response...":"AI సమాధానం రూపొందుతోంది...","Add to Favorites":"ఇష్టమైన వాటికి జోడించండి","Generated AI content":"AI రూపొందించిన కంటెంట్","Ask Creator Hub AI":"Creator Hub AIని అడగండి","Creator Hub AI conversation":"Creator Hub AI సంభాషణ"},
+    Tamil: {"Haven":"டாஷ்போர்டு","Idea Flow":"Idea Flow","Images & Thumbnails":"படங்கள் & சிறுபடங்கள்","Vault":"மீடியா & சொத்துகள்","Motion":"வீடியோ எடிட்டர்","Tempo":"காலண்டர்","Ink":"வரைவு மேலாளர்","Insights":"பகுப்பாய்வு","Profile Settings":"சுயவிவர அமைப்புகள்","Sign Out":"வெளியேறு","Language Selection":"மொழி தேர்வு","Save Changes":"மாற்றங்களை சேமிக்கவும்","Full Display Name":"முழுப் பெயர்","Security & Password":"பாதுகாப்பு & கடவுச்சொல்","Caption Generator":"கேப்ஷன் உருவாக்கி","Script Generator":"ஸ்கிரிப்ட் உருவாக்கி","Hashtag Generator":"ஹேஷ்டேக் உருவாக்கி","Bio Generator":"பயோ உருவாக்கி","Rewrite Content":"உள்ளடக்கத்தை மறுஎழுது","SEO Keywords":"SEO முக்கிய வார்த்தைகள்","Recreate":"மீண்டும் உருவாக்கு","Send":"அனுப்பு","Speak":"பேசு"},
+    Kannada: {"Haven":"ಡ್ಯಾಶ್‌ಬೋರ್ಡ್","Idea Flow":"Idea Flow","Images & Thumbnails":"ಚಿತ್ರಗಳು ಮತ್ತು ಥಂಬ್‌ನೇಲ್‌ಗಳು","Vault":"ಮೀಡಿಯಾ ಮತ್ತು ಆಸ್ತಿಗಳು","Motion":"ವೀಡಿಯೋ ಎಡಿಟರ್","Tempo":"ಕ್ಯಾಲೆಂಡರ್","Ink":"ಡ್ರಾಫ್ಟ್ ಮ್ಯಾನೇಜರ್","Insights":"ವಿಶ್ಲೇಷಣೆ","Profile Settings":"ಪ್ರೊಫೈಲ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು","Sign Out":"ಸೈನ್ ಔಟ್","Language Selection":"ಭಾಷೆ ಆಯ್ಕೆ","Save Changes":"ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ","Full Display Name":"ಪೂರ್ಣ ಹೆಸರು","Security & Password":"ಭದ್ರತೆ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್","Caption Generator":"ಕ್ಯಾಪ್ಶನ್ ಜನರೇಟರ್","Script Generator":"ಸ್ಕ್ರಿಪ್ಟ್ ಜನರೇಟರ್","Hashtag Generator":"ಹ್ಯಾಶ್‌ಟ್ಯಾಗ್ ಜನರೇಟರ್","Bio Generator":"ಬಯೋ ಜನರೇಟರ್","Rewrite Content":"ಕಂಟೆಂಟ್ ಮರುಬರೆಯಿರಿ","SEO Keywords":"SEO ಕೀವರ್ಡ್‌ಗಳು","Recreate":"ಮತ್ತೆ ರಚಿಸಿ","Send":"ಕಳುಹಿಸಿ","Speak":"ಮಾತನಾಡಿ","Generating AI response...":"AI ಉತ್ತರವನ್ನು ರಚಿಸಲಾಗುತ್ತಿದೆ...","Add to Favorites":"ಮೆಚ್ಚಿನವುಗಳಿಗೆ ಸೇರಿಸಿ","Generated AI content":"AI ರಚಿಸಿದ ವಿಷಯ","Ask Creator Hub AI":"Creator Hub AI ಅನ್ನು ಕೇಳಿ","Creator Hub AI conversation":"Creator Hub AI ಸಂಭಾಷಣೆ"},
+    Malayalam: {"Haven":"ഡാഷ്ബോർഡ്","Idea Flow":"Idea Flow","Images & Thumbnails":"ചിത്രങ്ങളും തംബ്നെയിലുകളും","Vault":"മീഡിയയും ആസ്തികളും","Motion":"വീഡിയോ എഡിറ്റർ","Tempo":"കലണ്ടർ","Ink":"ഡ്രാഫ്റ്റ് മാനേജർ","Insights":"അനലിറ്റിക്സ്","Profile Settings":"പ്രൊഫൈൽ ക്രമീകരണങ്ങൾ","Sign Out":"സൈൻ ഔട്ട്","Language Selection":"ഭാഷ തിരഞ്ഞെടുക്കൽ","Save Changes":"മാറ്റങ്ങൾ സംരക്ഷിക്കുക","Full Display Name":"പൂർണ്ണ പേര്","Security & Password":"സുരക്ഷയും പാസ്‌വേഡും","Caption Generator":"ക്യാപ്ഷൻ ജനറേറ്റർ","Script Generator":"സ്ക്രിപ്റ്റ് ജനറേറ്റർ","Hashtag Generator":"ഹാഷ്‌ടാഗ് ജനറേറ്റർ","Bio Generator":"ബയോ ജനറേറ്റർ","Rewrite Content":"ഉള്ളടക്കം പുനഃരചിക്കുക","SEO Keywords":"SEO കീവേഡുകൾ","Recreate":"വീണ്ടും സൃഷ്ടിക്കുക","Send":"അയയ്ക്കുക","Speak":"സംസാരിക്കുക"},
+    Gujarati: {"Haven":"ડેશબોર્ડ","Idea Flow":"Idea Flow","Images & Thumbnails":"છબીઓ અને થંબનેલ્સ","Vault":"મીડિયા અને એસેટ્સ","Motion":"વિડિયો એડિટર","Tempo":"કેલેન્ડર","Ink":"ડ્રાફ્ટ મેનેજર","Insights":"વિશ્લેષણ","Profile Settings":"પ્રોફાઇલ સેટિંગ્સ","Sign Out":"સાઇન આઉટ","Language Selection":"ભાષા પસંદગી","Save Changes":"ફેરફારો સાચવો","Full Display Name":"પૂરું નામ","Security & Password":"સુરક્ષા અને પાસવર્ડ","Caption Generator":"કૅપ્શન જનરેટર","Script Generator":"સ્ક્રિપ્ટ જનરેટર","Hashtag Generator":"હૅશટૅગ જનરેટર","Bio Generator":"બાયો જનરેટર","Rewrite Content":"કન્ટેન્ટ ફરી લખો","SEO Keywords":"SEO કીવર્ડ્સ","Recreate":"ફરી બનાવો","Send":"મોકલો","Speak":"બોલો"},
+    Punjabi: {"Haven":"ਡੈਸ਼ਬੋਰਡ","Idea Flow":"Idea Flow","Images & Thumbnails":"ਤਸਵੀਰਾਂ ਅਤੇ ਥੰਬਨੇਲ","Vault":"ਮੀਡੀਆ ਅਤੇ ਐਸੈਟਸ","Motion":"ਵੀਡੀਓ ਐਡੀਟਰ","Tempo":"ਕੈਲੰਡਰ","Ink":"ਡਰਾਫਟ ਮੈਨੇਜਰ","Insights":"ਵਿਸ਼ਲੇਸ਼ਣ","Profile Settings":"ਪ੍ਰੋਫ਼ਾਈਲ ਸੈਟਿੰਗਜ਼","Sign Out":"ਸਾਈਨ ਆਊਟ","Language Selection":"ਭਾਸ਼ਾ ਚੋਣ","Save Changes":"ਤਬਦੀਲੀਆਂ ਸੇਵ ਕਰੋ","Full Display Name":"ਪੂਰਾ ਨਾਮ","Security & Password":"ਸੁਰੱਖਿਆ ਅਤੇ ਪਾਸਵਰਡ","Caption Generator":"ਕੈਪਸ਼ਨ ਜਨਰੇਟਰ","Script Generator":"ਸਕ੍ਰਿਪਟ ਜਨਰੇਟਰ","Hashtag Generator":"ਹੈਸ਼ਟੈਗ ਜਨਰੇਟਰ","Bio Generator":"ਬਾਇਓ ਜਨਰੇਟਰ","Rewrite Content":"ਕੰਟੈਂਟ ਦੁਬਾਰਾ ਲਿਖੋ","SEO Keywords":"SEO ਕੀਵਰਡ","Recreate":"ਦੁਬਾਰਾ ਬਣਾਓ","Send":"ਭੇਜੋ","Speak":"ਬੋਲੋ"},
+    Urdu: {"Haven":"ڈیش بورڈ","Idea Flow":"Idea Flow","Images & Thumbnails":"تصاویر اور تھمب نیلز","Vault":"میڈیا اور اثاثے","Motion":"ویڈیو ایڈیٹر","Tempo":"کیلنڈر","Ink":"ڈرافٹ مینیجر","Insights":"تجزیات","Profile Settings":"پروفائل سیٹنگز","Sign Out":"سائن آؤٹ","Language Selection":"زبان کا انتخاب","Save Changes":"تبدیلیاں محفوظ کریں","Full Display Name":"پورا نام","Security & Password":"سیکیورٹی اور پاس ورڈ","Caption Generator":"کیپشن جنریٹر","Script Generator":"اسکرپٹ جنریٹر","Hashtag Generator":"ہیش ٹیگ جنریٹر","Bio Generator":"بایو جنریٹر","Rewrite Content":"مواد دوبارہ لکھیں","SEO Keywords":"SEO کی ورڈز","Recreate":"دوبارہ بنائیں","Send":"بھیجیں","Speak":"بولیں"},
+    Odia: {"Haven":"ଡ୍ୟାସବୋର୍ଡ","Idea Flow":"Idea Flow","Images & Thumbnails":"ଛବି ଏବଂ ଥମ୍ବନେଲ୍","Vault":"ମିଡିଆ ଏବଂ ଆସେଟ୍","Motion":"ଭିଡିଓ ଏଡିଟର୍","Tempo":"କ୍ୟାଲେଣ୍ଡର୍","Ink":"ଡ୍ରାଫ୍ଟ ମ୍ୟାନେଜର୍","Insights":"ବିଶ୍ଳେଷଣ","Profile Settings":"ପ୍ରୋଫାଇଲ୍ ସେଟିଂସ୍","Sign Out":"ସାଇନ୍ ଆଉଟ୍","Language Selection":"ଭାଷା ଚୟନ","Save Changes":"ପରିବର୍ତ୍ତନ ସଂରକ୍ଷଣ କରନ୍ତୁ","Full Display Name":"ପୂରା ନାମ","Security & Password":"ସୁରକ୍ଷା ଏବଂ ପାସୱାର୍ଡ","Caption Generator":"କ୍ୟାପସନ୍ ଜେନେରେଟର୍","Script Generator":"ସ୍କ୍ରିପ୍ଟ ଜେନେରେଟର୍","Hashtag Generator":"ହ୍ୟାସଟ୍ୟାଗ୍ ଜେନେରେଟର୍","Bio Generator":"ବାୟୋ ଜେନେରେଟର୍","Rewrite Content":"କଣ୍ଟେଣ୍ଟ ପୁନଃଲେଖନ","SEO Keywords":"SEO କୀୱାର୍ଡ","Recreate":"ପୁନଃ ସୃଷ୍ଟି କରନ୍ତୁ","Send":"ପଠାନ୍ତୁ","Speak":"କୁହନ୍ତୁ"},
+    Assamese: {"Haven":"ড্যাশব'ৰ্ড","Idea Flow":"Idea Flow","Images & Thumbnails":"ছবি আৰু থাম্বনেইল","Vault":"মিডিয়া আৰু এচেট","Motion":"ভিডিঅ' এডিটৰ","Tempo":"কেলেণ্ডাৰ","Ink":"ড্ৰাফ্ট মেনেজাৰ","Insights":"বিশ্লেষণ","Profile Settings":"প্ৰফাইল ছেটিংছ","Sign Out":"চাইন আউট","Language Selection":"ভাষা নিৰ্বাচন","Save Changes":"পৰিৱৰ্তন সংৰক্ষণ কৰক","Full Display Name":"সম্পূৰ্ণ নাম","Security & Password":"সুৰক্ষা আৰু পাছৱৰ্ড","Caption Generator":"কেপচন জেনেৰেটৰ","Script Generator":"স্ক্ৰিপ্ট জেনেৰেটৰ","Hashtag Generator":"হেশ্বটেগ জেনেৰেটৰ","Bio Generator":"বায়ো জেনেৰেটৰ","Rewrite Content":"কনটেন্ট পুনৰ লিখক","SEO Keywords":"SEO কীৱৰ্ড","Recreate":"পুনৰ সৃষ্টি কৰক","Send":"পঠাওক","Speak":"কওক"},
+    Spanish: {"Haven":"Panel","Idea Flow":"Idea Flow","Images & Thumbnails":"Imágenes y miniaturas","Vault":"Medios y recursos","Motion":"Editor de vídeo","Tempo":"Tempoio","Ink":"Gestor de borradores","Insights":"Analítica","Profile Settings":"Configuración del perfil","Sign Out":"Cerrar sesión","Language Selection":"Selección de idioma","Save Changes":"Guardar cambios","Full Display Name":"Nombre completo","Security & Password":"Seguridad y contraseña","Caption Generator":"Generador de subtítulos","Script Generator":"Generador de guiones","Hashtag Generator":"Generador de hashtags","Bio Generator":"Generador de biografías","Rewrite Content":"Reescribir contenido","SEO Keywords":"Palabras clave SEO","Recreate":"Crear de nuevo","Send":"Enviar","Speak":"Hablar"},
+    French: {"Haven":"Tableau de bord","Idea Flow":"Idea Flow","Images & Thumbnails":"Images et miniatures","Vault":"Médias et ressources","Motion":"Éditeur vidéo","Tempo":"Calendrier","Ink":"Gestionnaire de brouillons","Insights":"Analyses","Profile Settings":"Paramètres du profil","Sign Out":"Se déconnecter","Language Selection":"Choix de la langue","Save Changes":"Enregistrer les modifications","Full Display Name":"Nom complet","Security & Password":"Sécurité et mot de passe","Caption Generator":"Générateur de légendes","Script Generator":"Générateur de scripts","Hashtag Generator":"Générateur de hashtags","Bio Generator":"Générateur de bio","Rewrite Content":"Réécrire le contenu","SEO Keywords":"Mots-clés SEO","Recreate":"Recréer","Send":"Envoyer","Speak":"Parler"},
+    German: {"Haven":"Haven","Idea Flow":"Idea Flow","Images & Thumbnails":"Bilder & Thumbnails","Vault":"Medien & Assets","Motion":"Video-Editor","Tempo":"Kalender","Ink":"Entwurfsverwaltung","Insights":"Analysen","Profile Settings":"Profileinstellungen","Sign Out":"Abmelden","Language Selection":"Sprachauswahl","Save Changes":"Änderungen speichern","Full Display Name":"Vollständiger Name","Security & Password":"Sicherheit & Passwort","Caption Generator":"Caption-Generator","Script Generator":"Skript-Generator","Hashtag Generator":"Hashtag-Generator","Bio Generator":"Bio-Generator","Rewrite Content":"Inhalt umschreiben","SEO Keywords":"SEO-Keywords","Recreate":"Neu erstellen","Send":"Senden","Speak":"Sprechen"},
+    Dutch: {"Haven":"Haven","Idea Flow":"Idea Flow","Images & Thumbnails":"Afbeeldingen en miniaturen","Vault":"Media en assets","Motion":"Video-editor","Tempo":"Kalender","Ink":"Conceptbeheer","Insights":"Analyses","Profile Settings":"Profielinstellingen","Sign Out":"Uitloggen","Language Selection":"Taalkeuze","Save Changes":"Wijzigingen opslaan","Full Display Name":"Volledige naam","Security & Password":"Beveiliging en wachtwoord","Caption Generator":"Captiongenerator","Script Generator":"Scriptgenerator","Hashtag Generator":"Hashtag-generator","Bio Generator":"Bio-generator","Rewrite Content":"Inhoud herschrijven","SEO Keywords":"SEO-zoekwoorden","Recreate":"Opnieuw maken","Send":"Versturen","Speak":"Spreken"},
+    Portuguese: {"Haven":"Painel","Idea Flow":"Idea Flow","Images & Thumbnails":"Imagens e miniaturas","Vault":"Mídia e recursos","Motion":"Editor de vídeo","Tempo":"Calendário","Ink":"Gerenciador de rascunhos","Insights":"Análises","Profile Settings":"Configurações do perfil","Sign Out":"Sair","Language Selection":"Seleção de idioma","Save Changes":"Salvar alterações","Full Display Name":"Nome completo","Security & Password":"Segurança e senha","Caption Generator":"Gerador de legendas","Script Generator":"Gerador de roteiros","Hashtag Generator":"Gerador de hashtags","Bio Generator":"Gerador de bio","Rewrite Content":"Reescrever conteúdo","SEO Keywords":"Palavras-chave SEO","Recreate":"Criar novamente","Send":"Enviar","Speak":"Falar"},
+    Italian: {"Haven":"Haven","Idea Flow":"Idea Flow","Images & Thumbnails":"Immagini e miniature","Vault":"Media e risorse","Motion":"Editor video","Tempo":"Tempoio","Ink":"Gestore bozze","Insights":"Analisi","Profile Settings":"Impostazioni profilo","Sign Out":"Esci","Language Selection":"Selezione lingua","Save Changes":"Salva modifiche","Full Display Name":"Nome completo","Security & Password":"Sicurezza e password","Caption Generator":"Generatore di didascalie","Script Generator":"Generatore di script","Hashtag Generator":"Generatore di hashtag","Bio Generator":"Generatore bio","Rewrite Content":"Riscrivi contenuto","SEO Keywords":"Parole chiave SEO","Recreate":"Ricrea","Send":"Invia","Speak":"Parla"},
+    Chinese: {"Haven":"仪表板","Idea Flow":"Idea Flow","Images & Thumbnails":"图片和缩略图","Vault":"媒体和资源","Motion":"视频编辑器","Tempo":"日历","Ink":"草稿管理","Insights":"分析","Profile Settings":"个人资料设置","Sign Out":"退出登录","Language Selection":"语言选择","Save Changes":"保存更改","Full Display Name":"完整显示名称","Security & Password":"安全与密码","Caption Generator":"标题生成器","Script Generator":"脚本生成器","Hashtag Generator":"话题标签生成器","Bio Generator":"个人简介生成器","Rewrite Content":"重写内容","SEO Keywords":"SEO 关键词","Recreate":"重新生成","Send":"发送","Speak":"语音输入"},
+    Japanese: {"Haven":"ダッシュボード","Idea Flow":"Idea Flow","Images & Thumbnails":"画像とサムネイル","Vault":"メディアとアセット","Motion":"ビデオエディター","Tempo":"カレンダー","Ink":"下書き管理","Insights":"分析","Profile Settings":"プロフィール設定","Sign Out":"ログアウト","Language Selection":"言語選択","Save Changes":"変更を保存","Full Display Name":"表示名","Security & Password":"セキュリティとパスワード","Caption Generator":"キャプション生成","Script Generator":"スクリプト生成","Hashtag Generator":"ハッシュタグ生成","Bio Generator":"プロフィール生成","Rewrite Content":"コンテンツを書き換える","SEO Keywords":"SEOキーワード","Recreate":"再生成","Send":"送信","Speak":"話す"},
+    Korean: {"Haven":"대시보드","Idea Flow":"Idea Flow","Images & Thumbnails":"이미지 및 썸네일","Vault":"미디어 및 자산","Motion":"비디오 편집기","Tempo":"캘린더","Ink":"초안 관리자","Insights":"분석","Profile Settings":"프로필 설정","Sign Out":"로그아웃","Language Selection":"언어 선택","Save Changes":"변경 사항 저장","Full Display Name":"전체 이름","Security & Password":"보안 및 비밀번호","Caption Generator":"캡션 생성기","Script Generator":"스크립트 생성기","Hashtag Generator":"해시태그 생성기","Bio Generator":"소개 생성기","Rewrite Content":"콘텐츠 다시 작성","SEO Keywords":"SEO 키워드","Recreate":"다시 만들기","Send":"보내기","Speak":"말하기"},
+    Arabic: {"Haven":"لوحة التحكم","Idea Flow":"Idea Flow","Images & Thumbnails":"الصور والصور المصغرة","Vault":"الوسائط والأصول","Motion":"محرر الفيديو","Tempo":"التقويم","Ink":"إدارة المسودات","Insights":"التحليلات","Profile Settings":"إعدادات الملف الشخصي","Sign Out":"تسجيل الخروج","Language Selection":"اختيار اللغة","Save Changes":"حفظ التغييرات","Full Display Name":"الاسم الكامل","Security & Password":"الأمان وكلمة المرور","Caption Generator":"منشئ التعليقات","Script Generator":"منشئ النصوص","Hashtag Generator":"منشئ الوسوم","Bio Generator":"منشئ السيرة","Rewrite Content":"إعادة كتابة المحتوى","SEO Keywords":"كلمات SEO","Recreate":"إعادة الإنشاء","Send":"إرسال","Speak":"تحدث"},
+    Russian: {"Haven":"Панель управления","Idea Flow":"Idea Flow","Images & Thumbnails":"Изображения и миниатюры","Vault":"Медиа и ресурсы","Motion":"Видеоредактор","Tempo":"Календарь","Ink":"Менеджер черновиков","Insights":"Аналитика","Profile Settings":"Настройки профиля","Sign Out":"Выйти","Language Selection":"Выбор языка","Save Changes":"Сохранить изменения","Full Display Name":"Полное имя","Security & Password":"Безопасность и пароль","Caption Generator":"Генератор подписей","Script Generator":"Генератор сценариев","Hashtag Generator":"Генератор хэштегов","Bio Generator":"Генератор биографии","Rewrite Content":"Переписать контент","SEO Keywords":"SEO-ключевые слова","Recreate":"Создать заново","Send":"Отправить","Speak":"Говорить"}
+  };
+  const EXTRA = {
+    Kannada: {
+      "Idea Flow & Content Studio":"AI ಕಾರ್ಯಕ್ಷೇತ್ರ ಮತ್ತು ವಿಷಯ ಸ್ಟುಡಿಯೋ","Turn your ideas into captions, scripts and more.":"ಕ್ಯಾಪ್ಶನ್, ಸ್ಕ್ರಿಪ್ಟ್, ಹ್ಯಾಶ್‌ಟ್ಯಾಗ್, ಬಯೋ ಮತ್ತು SEO ಕೀವರ್ಡ್‌ಗಳನ್ನು ಕ್ಷಣಗಳಲ್ಲಿ ರಚಿಸಿ.",
+      "Prompt Templates":"ಪ್ರಾಂಪ್ಟ್ ಟೆಂಪ್ಲೇಟ್‌ಗಳು","Select AI Tool":"AI ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ","TOOL SETTINGS":"ಸಾಧನದ ಸೆಟ್ಟಿಂಗ್‌ಗಳು","Topic or Keyword":"ವಿಷಯ ಅಥವಾ ಕೀವರ್ಡ್","Target Platform":"ಗುರಿ ಪ್ಲಾಟ್‌ಫಾರ್ಮ್","Tone of Voice":"ಬರವಣಿಗೆಯ ಶೈಲಿ","Generate Caption":"ಕ್ಯಾಪ್ಶನ್ ರಚಿಸಿ",
+      "Video Concept / Topic":"ವೀಡಿಯೋ ಪರಿಕಲ್ಪನೆ / ವಿಷಯ","Video Format":"ವೀಡಿಯೋ ಸ್ವರೂಪ","Duration":"ಅವಧಿ","Generate Script":"ಸ್ಕ್ರಿಪ್ಟ್ ರಚಿಸಿ","Main Keyword / Topic":"ಮುಖ್ಯ ಕೀವರ್ಡ್ / ವಿಷಯ","Platform":"ಪ್ಲಾಟ್‌ಫಾರ್ಮ್","Creator Niche":"ಕ್ರಿಯೇಟರ್ ಕ್ಷೇತ್ರ","Generate Hashtags":"ಹ್ಯಾಶ್‌ಟ್ಯಾಗ್‌ಗಳನ್ನು ರಚಿಸಿ",
+      "Industry / Niche":"ಉದ್ಯಮ / ಕ್ಷೇತ್ರ","Personality":"ವ್ಯಕ್ತಿತ್ವ","Call To Action (CTA)":"ಕ್ರಿಯೆಗೆ ಕರೆ (CTA)","Generate Bios":"ಬಯೋಗಳನ್ನು ರಚಿಸಿ","Paste Original Draft":"ಮೂಲ ಡ್ರಾಫ್ಟ್ ಅಂಟಿಸಿ","Target Tone":"ಗುರಿ ಶೈಲಿ","Rewrite Text":"ಪಠ್ಯವನ್ನು ಮರುಬರೆಯಿರಿ","Topic or Product":"ವಿಷಯ ಅಥವಾ ಉತ್ಪನ್ನ","Industry Sector":"ಉದ್ಯಮ ಕ್ಷೇತ್ರ","Generate SEO Report":"SEO ವರದಿ ರಚಿಸಿ",
+      "AI Generation Output":"AI ರಚಿಸಿದ ಫಲಿತಾಂಶ","Select a tool and click generate":"ಸಾಧನವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ ಮತ್ತು ರಚಿಸಿ","Copy":"ನಕಲಿಸಿ","Preset Prompt Templates":"ಪೂರ್ವನಿರ್ಧರಿತ ಪ್ರಾಂಪ್ಟ್ ಟೆಂಪ್ಲೇಟ್‌ಗಳು","Recreate":"ಮತ್ತೆ ರಚಿಸಿ","Send":"ಕಳುಹಿಸಿ","Speak":"ಮಾತನಾಡಿ","Listening...":"ಕೇಳಲಾಗುತ್ತಿದೆ...",
+      "Generated content will appear here in real-time...":"ರಚಿಸಿದ ವಿಷಯ ಇಲ್ಲಿ ತಕ್ಷಣ ಕಾಣಿಸುತ್ತದೆ...","Generating AI response with offline fallback fallback...":"AI ಉತ್ತರವನ್ನು ರಚಿಸಲಾಗುತ್ತಿದೆ...","Ask, refine, or recreate your current AI result.":"ನಿಮ್ಮ ಪ್ರಸ್ತುತ AI ಫಲಿತಾಂಶವನ್ನು ಕೇಳಿ, ಬದಲಾಯಿಸಿ ಅಥವಾ ಮತ್ತೆ ರಚಿಸಿ.",
+      "I can refine the current result or answer questions about CreatorOS.":"ನಾನು ಪ್ರಸ್ತುತ ಫಲಿತಾಂಶವನ್ನು ಬದಲಾಯಿಸಬಹುದು ಅಥವಾ CreatorOS ಬಗ್ಗೆ ನಿಮ್ಮ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಬಹುದು.","Ask Creator Hub AI to change, refine, recreate, or explain something...":"Creator Hub AIಗೆ ಬದಲಾಯಿಸಲು, ಸುಧಾರಿಸಲು, ಮತ್ತೆ ರಚಿಸಲು ಅಥವಾ ವಿವರಿಸಲು ಕೇಳಿ...",
+      "Caption Generator":"ಕ್ಯಾಪ್ಶನ್ ರಚನೆಗಾರ","Script Generator":"ಸ್ಕ್ರಿಪ್ಟ್ ರಚನೆಗಾರ","Hashtag Generator":"ಹ್ಯಾಶ್‌ಟ್ಯಾಗ್ ರಚನೆಗಾರ","Bio Generator":"ಬಯೋ ರಚನೆಗಾರ","Rewrite Content":"ವಿಷಯವನ್ನು ಮರುಬರೆಯಿರಿ","SEO Keywords":"SEO ಕೀವರ್ಡ್‌ಗಳು",
+      "Short Form (Reels/Shorts)":"ಕಿರು ರೂಪ (ರೀಲ್ಸ್/ಶಾರ್ಟ್ಸ್)","YouTube Longform":"ಯೂಟ್ಯೂಬ್ ದೀರ್ಘ ರೂಪ","Podcast Intro":"ಪಾಡ್‌ಕಾಸ್ಟ್ ಪರಿಚಯ","60 Seconds":"60 ಸೆಕೆಂಡುಗಳು","30 Seconds":"30 ಸೆಕೆಂಡುಗಳು","3 Minutes":"3 ನಿಮಿಷಗಳು",
+      "Engaging & Viral":"ಆಕರ್ಷಕ ಮತ್ತು ವೈರಲ್","Educational & Professional":"ಶೈಕ್ಷಣಿಕ ಮತ್ತು ವೃತ್ತಿಪರ","Witty & Conversational":"ಚುರುಕು ಮತ್ತು ಸಂಭಾಷಣಾತ್ಮಕ","Urgent & Promotional":"ತುರ್ತು ಮತ್ತು ಪ್ರಚಾರಾತ್ಮಕ","Witty & Bold":"ಚುರುಕು ಮತ್ತು ಧೈರ್ಯಶಾಲಿ","Professional Authority":"ವೃತ್ತಿಪರ ಪ್ರಾಮುಖ್ಯತೆ","Friendly & Minimalist":"ಸ್ನೇಹಪರ ಮತ್ತು ಸರಳ",
+      "Instagram":"ಇನ್‌ಸ್ಟಾಗ್ರಾಮ್","TikTok":"ಟಿಕ್‌ಟಾಕ್","LinkedIn":"ಲಿಂಕ್ಡ್‌ಇನ್","Twitter / X":"ಟ್ವಿಟರ್ / ಎಕ್ಸ್","YouTube Shorts":"ಯೂಟ್ಯೂಬ್ ಶಾರ್ಟ್ಸ್","YouTube":"ಯೂಟ್ಯೂಬ್",
+      "Profile & Platform Settings":"ಪ್ರೊಫೈಲ್ ಮತ್ತು ಪ್ಲಾಟ್‌ಫಾರ್ಮ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು","Manage your profile picture, display name, preferred language and account settings.":"ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಚಿತ್ರ, ಪ್ರದರ್ಶನ ಹೆಸರು, ಆಯ್ಕೆಯ ಭಾಷೆ ಮತ್ತು ಥೀಮ್ ಆದ್ಯತೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ.",
+      "Full Display Name":"ಪೂರ್ಣ ಪ್ರದರ್ಶನ ಹೆಸರು","Language Selection":"ಭಾಷೆ ಆಯ್ಕೆ","Default Theme Selection":"ಡೀಫಾಲ್ಟ್ ಥೀಮ್ ಆಯ್ಕೆ","Security & Password":"ಭದ್ರತೆ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್","Account Preferences & Profile Details":"ಖಾತೆ ಆದ್ಯತೆಗಳು ಮತ್ತು ಪ್ರೊಫೈಲ್ ವಿವರಗಳು","Sign Out of Workspace":"ವರ್ಕ್‌ಸ್ಪೇಸ್‌ನಿಂದ ಸೈನ್ ಔಟ್","Preferred Language:":"ಆಯ್ಕೆಯ ಭಾಷೆ:","Joined CreatorOS:":"CreatorOSಗೆ ಸೇರಿದ ದಿನಾಂಕ:","Verified":"ಪರಿಶೀಲಿಸಲಾಗಿದೆ","Admin Control Panel":"ನಿರ್ವಾಹಕ ನಿಯಂತ್ರಣ ಫಲಕ",
+      "New Password (Leave blank to keep current)":"ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ (ಈಗಿರುವುದನ್ನು ಉಳಿಸಲು ಖಾಲಿ ಬಿಡಿ)","Save Changes":"ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ","Navy Gold Light Mode":"ನೇವಿ ಮತ್ತು ಗೋಲ್ಡ್ ಲೈಟ್ ಮೋಡ್","Navy Gold Dark Mode":"ನೇವಿ ಮತ್ತು ಗೋಲ್ಡ್ ಡಾರ್ಕ್ ಮೋಡ್",
+      "Change profile photo":"ಪ್ರೊಫೈಲ್ ಚಿತ್ರ ಬದಲಾಯಿಸಿ","Add to Favorites":"ಮೆಚ್ಚಿನವುಗಳಿಗೆ ಸೇರಿಸಿ","Generated AI content":"AI ರಚಿಸಿದ ವಿಷಯ","Creator Hub AI conversation":"Creator Hub AI ಸಂಭಾಷಣೆ","Ask Creator Hub AI":"Creator Hub AI ಅನ್ನು ಕೇಳಿ","Generating AI response...":"AI ಉತ್ತರವನ್ನು ರಚಿಸಲಾಗುತ್ತಿದೆ...","Navy Gold Light Mode":"ನೇವಿ ಮತ್ತು ಗೋಲ್ಡ್ ಲೈಟ್ ಮೋಡ್","Navy Gold Dark Mode":"ನೇವಿ ಮತ್ತು ಗೋಲ್ಡ್ ಡಾರ್ಕ್ ಮೋಡ್","New Password (Leave blank to keep current)":"ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ (ಪ್ರಸ್ತುತದನ್ನು ಉಳಿಸಲು ಖಾಲಿ ಬಿಡಿ)","Account":"ಖಾತೆ","Profile photo":"ಪ್ರೊಫೈಲ್ ಚಿತ್ರ","Verified":"ಪರಿಶೀಲಿಸಲಾಗಿದೆ","Joined CreatorOS:":"CreatorOS ಸೇರಿದ ದಿನಾಂಕ:","Preferred Language:":"ಆದ್ಯತೆಯ ಭಾಷೆ:","Core Navigation":"ಮುಖ್ಯ ನ್ಯಾವಿಗೇಶನ್","Haven":"ಡ್ಯಾಶ್‌ಬೋರ್ಡ್","AI Engine":"AI ಎಂಜಿನ್","Images & Thumbnails":"ಚಿತ್ರಗಳು ಮತ್ತು ಥಂಬ್‌ನೇಲ್‌ಗಳು","Vault":"ಮೀಡಿಯಾ ಮತ್ತು ಆಸ್ತಿಗಳು","Motion":"ವೀಡಿಯೋ ಎಡಿಟರ್","Management":"ನಿರ್ವಹಣೆ","Tempo":"ಕ್ಯಾಲೆಂಡರ್","Ink":"ಡ್ರಾಫ್ಟ್ ಮ್ಯಾನೇಜರ್","Insights":"ವಿಶ್ಲೇಷಣೆ","Profile Settings":"ಪ್ರೊಫೈಲ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು","Sign Out":"ಸೈನ್ ಔಟ್"
+    },
+    Telugu: {
+      "Idea Flow & Content Studio":"AI వర్క్‌స్పేస్ మరియు కంటెంట్ స్టూడియో","Turn your ideas into captions, scripts and more.":"క్యాప్షన్‌లు, స్క్రిప్ట్‌లు, హ్యాష్‌ట్యాగ్‌లు, బయోలు మరియు SEO కీవర్డ్‌లను క్షణాల్లో రూపొందించండి.",
+      "Prompt Templates":"ప్రాంప్ట్ టెంప్లేట్‌లు","Select AI Tool":"AI సాధనాన్ని ఎంచుకోండి","TOOL SETTINGS":"సాధన సెట్టింగ్‌లు","Topic or Keyword":"విషయం లేదా కీవర్డ్","Target Platform":"లక్ష్య ప్లాట్‌ఫారమ్","Tone of Voice":"రచనా శైలి","Generate Caption":"క్యాప్షన్ రూపొందించండి",
+      "Video Concept / Topic":"వీడియో ఆలోచన / విషయం","Video Format":"వీడియో ఫార్మాట్","Duration":"వ్యవధి","Generate Script":"స్క్రిప్ట్ రూపొందించండి","Main Keyword / Topic":"ప్రధాన కీవర్డ్ / విషయం","Platform":"ప్లాట్‌ఫారమ్","Creator Niche":"క్రియేటర్ రంగం","Generate Hashtags":"హ్యాష్‌ట్యాగ్‌లను రూపొందించండి",
+      "Industry / Niche":"పరిశ్రమ / రంగం","Personality":"వ్యక్తిత్వం","Call To Action (CTA)":"చర్యకు పిలుపు (CTA)","Generate Bios":"బయోలను రూపొందించండి","Paste Original Draft":"అసలు డ్రాఫ్ట్‌ను అతికించండి","Target Tone":"లక్ష్య శైలి","Rewrite Text":"పాఠ్యాన్ని మళ్లీ రాయండి","Topic or Product":"విషయం లేదా ఉత్పత్తి","Industry Sector":"పరిశ్రమ రంగం","Generate SEO Report":"SEO నివేదికను రూపొందించండి",
+      "AI Generation Output":"AI రూపొందించిన ఫలితం","Select a tool and click generate":"సాధనాన్ని ఎంచుకుని రూపొందించండి","Copy":"కాపీ చేయండి","Preset Prompt Templates":"ముందుగా సిద్ధం చేసిన ప్రాంప్ట్ టెంప్లేట్‌లు","Recreate":"మళ్లీ రూపొందించండి","Send":"పంపండి","Speak":"మాట్లాడండి","Listening...":"వింటోంది...",
+      "Generated content will appear here in real-time...":"రూపొందించిన కంటెంట్ ఇక్కడ వెంటనే కనిపిస్తుంది...","Generating AI response with offline fallback fallback...":"AI సమాధానం రూపొందుతోంది...","Ask, refine, or recreate your current AI result.":"మీ ప్రస్తుత AI ఫలితాన్ని అడగండి, మార్చండి లేదా మళ్లీ రూపొందించండి.",
+      "I can refine the current result or answer questions about CreatorOS.":"నేను ప్రస్తుత ఫలితాన్ని మార్చగలను లేదా CreatorOS గురించి మీ ప్రశ్నలకు సమాధానం ఇవ్వగలను.","Ask Creator Hub AI to change, refine, recreate, or explain something...":"ఏదైనా మార్చడానికి, మెరుగుపరచడానికి, మళ్లీ రూపొందించడానికి లేదా వివరించడానికి Creator Hub AIని అడగండి...",
+      "Caption Generator":"క్యాప్షన్ రూపొందించేది","Script Generator":"స్క్రిప్ట్ రూపొందించేది","Hashtag Generator":"హ్యాష్‌ట్యాగ్ రూపొందించేది","Bio Generator":"బయో రూపొందించేది","Rewrite Content":"కంటెంట్‌ను మళ్లీ రాయండి","SEO Keywords":"SEO కీవర్డ్‌లు",
+      "Short Form (Reels/Shorts)":"షార్ట్ ఫార్మ్ (రీల్స్/షార్ట్స్)","YouTube Longform":"యూట్యూబ్ లాంగ్‌ఫార్మ్","Podcast Intro":"పాడ్‌కాస్ట్ పరిచయం","60 Seconds":"60 సెకన్లు","30 Seconds":"30 సెకన్లు","3 Minutes":"3 నిమిషాలు",
+      "Engaging & Viral":"ఆకట్టుకునే మరియు వైరల్","Educational & Professional":"విద్యాపరమైన మరియు ప్రొఫెషనల్","Witty & Conversational":"చమత్కారమైన మరియు సంభాషణాత్మక","Urgent & Promotional":"అత్యవసర మరియు ప్రచారాత్మక","Witty & Bold":"చమత్కారమైన మరియు ధైర్యమైన","Professional Authority":"వృత్తిపరమైన ప్రాధాన్యత","Friendly & Minimalist":"స్నేహపూర్వక మరియు సరళమైన",
+      "Instagram":"ఇన్‌స్టాగ్రామ్","TikTok":"టిక్‌టాక్","LinkedIn":"లింక్డ్‌ఇన్","Twitter / X":"ట్విట్టర్ / ఎక్స్","YouTube Shorts":"యూట్యూబ్ షార్ట్స్","YouTube":"యూట్యూబ్",
+      "Profile & Platform Settings":"ప్రొఫైల్ మరియు ప్లాట్‌ఫారమ్ సెట్టింగ్స్","Manage your profile picture, display name, preferred language and account settings.":"మీ ప్రొఫైల్ ఫోటో, ప్రదర్శన పేరు, ఇష్టమైన భాష మరియు థీమ్ ప్రాధాన్యతలను నిర్వహించండి.",
+      "Full Display Name":"పూర్తి ప్రదర్శన పేరు","Language Selection":"భాష ఎంపిక","Default Theme Selection":"డిఫాల్ట్ థీమ్ ఎంపిక","Security & Password":"భద్రత మరియు పాస్‌వర్డ్","Account Preferences & Profile Details":"ఖాతా ప్రాధాన్యతలు మరియు ప్రొఫైల్ వివరాలు","Sign Out of Workspace":"వర్క్‌స్పేస్ నుండి సైన్ అవుట్","Preferred Language:":"ఎంచుకున్న భాష:","Joined CreatorOS:":"CreatorOSలో చేరిన తేదీ:","Verified":"ధృవీకరించబడింది","Admin Control Panel":"అడ్మిన్ నియంత్రణ ప్యానెల్",
+      "New Password (Leave blank to keep current)":"కొత్త పాస్‌వర్డ్ (ప్రస్తుతదాన్ని ఉంచాలంటే ఖాళీగా ఉంచండి)","Save Changes":"మార్పులను సేవ్ చేయండి","Navy Gold Light Mode":"నేవీ మరియు గోల్డ్ లైట్ మోడ్","Navy Gold Dark Mode":"నేవీ మరియు గోల్డ్ డార్క్ మోడ్",
+      "Change profile photo":"ప్రొఫైల్ ఫోటో మార్చండి","Add to Favorites":"ఇష్టమైన వాటికి జోడించండి","Generated AI content":"AI రూపొందించిన కంటెంట్","Creator Hub AI conversation":"Creator Hub AI సంభాషణ","Ask Creator Hub AI":"Creator Hub AIని అడగండి","Generating AI response...":"AI సమాధానం రూపొందుతోంది...","Navy Gold Light Mode":"నేవీ మరియు గోల్డ్ లైట్ మోడ్","Navy Gold Dark Mode":"నేవీ మరియు గోల్డ్ డార్క్ మోడ్","New Password (Leave blank to keep current)":"కొత్త పాస్‌వర్డ్ (ప్రస్తుతదాన్ని ఉంచాలంటే ఖాళీగా ఉంచండి)","Account":"ఖాతా","Profile photo":"ప్రొఫైల్ ఫోటో","Verified":"ధృవీకరించబడింది","Joined CreatorOS:":"CreatorOSలో చేరిన తేదీ:","Preferred Language:":"ఎంచుకున్న భాష:","Haven":"డ్యాష్‌బోర్డ్","AI Engine":"AI ఇంజిన్","Images & Thumbnails":"చిత్రాలు మరియు థంబ్‌నెయిల్స్","Vault":"మీడియా మరియు ఆస్తులు","Motion":"వీడియో ఎడిటర్","Management":"నిర్వహణ","Tempo":"క్యాలెండర్","Ink":"డ్రాఫ్ట్ మేనేజర్","Insights":"విశ్లేషణ","Profile Settings":"ప్రొఫైల్ సెట్టింగ్స్","Sign Out":"సైన్ అవుట్"
+    }
+  };
+  const COMMON_EXTRA = {
+    Kannada: {
+      "Edit Name & Profile Picture":"ಹೆಸರು ಮತ್ತು ಪ್ರೊಫೈಲ್ ಚಿತ್ರ ಸಂಪಾದನೆ","Language Selection":"ಭಾಷೆ ಮತ್ತು ಥೀಮ್ ಆಯ್ಕೆ","Left Column: Profile Card & Avatar Upload":"ಎಡ ಭಾಗ: ಪ್ರೊಫೈಲ್ ಕಾರ್ಡ್ ಮತ್ತು ಅವತಾರ್ ಅಪ್‌ಲೋಡ್","Right Column: Edit Profile & Preferences Form":"ಬಲ ಭಾಗ: ಪ್ರೊಫೈಲ್ ಮತ್ತು ಆದ್ಯತೆಗಳ ಫಾರ್ಮ್","Security Settings: Change Password":"ಭದ್ರತಾ ಸೆಟ್ಟಿಂಗ್‌ಗಳು: ಪಾಸ್‌ವರ್ಡ್ ಬದಲಾಯಿಸಿ","Click the":"ಇದನ್ನು ಒತ್ತಿ","camera on your profile photo to choose a picture.":"ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಚಿತ್ರದ ಕ್ಯಾಮೆರಾವನ್ನು ಒತ್ತಿ ಚಿತ್ರವನ್ನು ಆಯ್ಕೆಮಾಡಿ.",
+      "Prompt Templates":"ಪ್ರಾಂಪ್ಟ್ ಟೆಂಪ್ಲೇಟ್‌ಗಳು","Tool selector is the horizontal bar; the workspace no longer uses a left sidebar.":"ಸಾಧನ ಆಯ್ಕೆಗಾಗಿ ಮೇಲಿನ ಅಡ್ಡಪಟ್ಟಿಯನ್ನು ಬಳಸಿ; ಕಾರ್ಯಕ್ಷೇತ್ರದಲ್ಲಿ ಎಡ ಬದಿಯ ಪಟ್ಟಿಯನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ.","Dynamic Form Fields for Active Tool":"ಆಯ್ಕೆ ಮಾಡಿದ ಸಾಧನದ ಇನ್‌ಪುಟ್ ಕ್ಷೇತ್ರಗಳು","Tool Pills Navigation":"ಸಾಧನಗಳ ನ್ಯಾವಿಗೇಶನ್","Full-width AI Live Generation Output Window":"ಪೂರ್ಣ ಅಗಲದ AI ಫಲಿತಾಂಶ ವಿಂಡೋ","Output Content Area":"ಫಲಿತಾಂಶದ ವಿಷಯ ಪ್ರದೇಶ","Header Title & Preset Prompt Templates Modal Trigger":"ಶೀರ್ಷಿಕೆ ಮತ್ತು ಪೂರ್ವನಿರ್ಧರಿತ ಪ್ರಾಂಪ್ಟ್ ಟೆಂಪ್ಲೇಟ್‌ಗಳು","Modal for Preset Prompt Templates":"ಪೂರ್ವನಿರ್ಧರಿತ ಪ್ರಾಂಪ್ಟ್ ಟೆಂಪ್ಲೇಟ್‌ಗಳ ವಿಂಡೋ",
+      "Paste your caption or article draft...":"ನಿಮ್ಮ ಕ್ಯಾಪ್ಶನ್ ಅಥವಾ ಲೇಖನದ ಡ್ರಾಫ್ಟ್ ಅನ್ನು ಅಂಟಿಸಿ...","e.g. 5 Morning Habits for Productivity":"ಉದಾ. ಉತ್ಪಾದಕತೆಗಾಗಿ 5 ಬೆಳಗಿನ ಅಭ್ಯಾಸಗಳು","e.g. How I Built a $10k/mo Business":"ಉದಾ. ನಾನು ತಿಂಗಳಿಗೆ $10,000 ವ್ಯವಹಾರವನ್ನು ಹೇಗೆ ನಿರ್ಮಿಸಿದೆ","e.g. Graphic Design":"ಉದಾ. ಗ್ರಾಫಿಕ್ ವಿನ್ಯಾಸ","e.g. Tech & AI":"ಉದಾ. ತಂತ್ರಜ್ಞಾನ ಮತ್ತು AI","e.g. AI Fitness Coach":"ಉದಾ. AI ಫಿಟ್‌ನೆಸ್ ಕೋಚ್","e.g. Claim Free Ebook":"ಉದಾ. ಉಚಿತ ಇ-ಬುಕ್ ಪಡೆಯಿರಿ","e.g. Wireless Noise Canceling Headphones":"ಉದಾ. ವೈರ್‌ಲೆಸ್ ಶಬ್ದ ರದ್ದತಿ ಹೆಡ್‌ಫೋನ್‌ಗಳು","e.g. Consumer Electronics":"ಉದಾ. ಗ್ರಾಹಕ ಎಲೆಕ್ಟ್ರಾನಿಕ್ಸ್",
+      "English":"ಇಂಗ್ಲಿಷ್","हिन्दी (Hindi)":"ಹಿಂದಿ","বাংলা (Bengali)":"ಬಂಗಾಳಿ","मराठी (Marathi)":"ಮರಾಠಿ","తెలుగు (Telugu)":"ತೆಲುಗು","தமிழ் (Tamil)":"ತಮಿಳು","ಕನ್ನಡ (Kannada)":"ಕನ್ನಡ","മലയാളം (Malayalam)":"ಮಲಯಾಳಂ","ગુજરાતી (Gujarati)":"ಗುಜರಾತಿ","ਪੰਜਾਬੀ (Punjabi)":"ಪಂಜಾಬಿ","اردو (Urdu)":"ಉರ್ದು","ଓଡ଼ିଆ (Odia)":"ಒಡಿಯಾ","অসমীয়া (Assamese)":"ಅಸ್ಸಾಮಿ","Español (Spanish)":"ಸ್ಪ್ಯಾನಿಷ್","Français (French)":"ಫ್ರೆಂಚ್","Deutsch (German)":"ಜರ್ಮನ್","Nederlands (Dutch)":"ಡಚ್","Português (Portuguese)":"ಪೋರ್ಚುಗೀಸ್","Italiano (Italian)":"ಇಟಾಲಿಯನ್","中文 (Chinese)":"ಚೈನೀಸ್","日本語 (Japanese)":"ಜಪಾನೀಸ್","한국어 (Korean)":"ಕೊರಿಯನ್","العربية (Arabic)":"ಅರೇಬಿಕ್","Русский (Russian)":"ರಷ್ಯನ್",
+      "Core Navigation":"ಮುಖ್ಯ ನ್ಯಾವಿಗೇಶನ್","AI Engine":"AI ಎಂಜಿನ್","Haven":"ಡ್ಯಾಶ್‌ಬೋರ್ಡ್","Idea Flow":"Idea Flow","Images & Thumbnails":"ಚಿತ್ರಗಳು ಮತ್ತು ಥಂಬ್‌ನೇಲ್‌ಗಳು","Vault":"ಮೀಡಿಯಾ ಮತ್ತು ಆಸ್ತಿಗಳು","Motion":"ವೀಡಿಯೋ ಎಡಿಟರ್","Management":"ನಿರ್ವಹಣೆ","Tempo":"ಕ್ಯಾಲೆಂಡರ್","Ink":"ಡ್ರಾಫ್ಟ್ ಮ್ಯಾನೇಜರ್","Insights":"ವಿಶ್ಲೇಷಣೆ","Profile Settings":"ಪ್ರೊಫೈಲ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು","Sign Out":"ಸೈನ್ ಔಟ್"
+    },
+    Telugu: {
+      "Edit Name & Profile Picture":"పేరు మరియు ప్రొఫైల్ ఫోటో సవరణ","Language Selection":"భాష మరియు థీమ్ ఎంపిక","Left Column: Profile Card & Avatar Upload":"ఎడమ భాగం: ప్రొఫైల్ కార్డ్ మరియు అవతార్ అప్‌లోడ్","Right Column: Edit Profile & Preferences Form":"కుడి భాగం: ప్రొఫైల్ మరియు ప్రాధాన్యతల ఫారమ్","Security Settings: Change Password":"భద్రతా సెట్టింగ్స్: పాస్‌వర్డ్ మార్చండి","Click the":"దీనిని నొక్కి","camera on your profile photo to choose a picture.":"మీ ప్రొఫైల్ ఫోటోపై ఉన్న కెమెరాను నొక్కి చిత్రాన్ని ఎంచుకోండి.",
+      "Prompt Templates":"ప్రాంప్ట్ టెంప్లేట్‌లు","Tool selector is the horizontal bar; the workspace no longer uses a left sidebar.":"సాధనాలను ఎంచుకోవడానికి పై అడ్డ పట్టీని ఉపయోగించండి; వర్క్‌స్పేస్‌లో ఎడమ సైడ్‌బార్ లేదు.","Dynamic Form Fields for Active Tool":"ఎంచుకున్న సాధనానికి ఇన్‌పుట్ ఫీల్డ్‌లు","Tool Pills Navigation":"సాధనాల నావిగేషన్","Full-width AI Live Generation Output Window":"పూర్తి వెడల్పు AI ఫలితాల విండో","Output Content Area":"ఫలితాల కంటెంట్ ప్రాంతం","Header Title & Preset Prompt Templates Modal Trigger":"శీర్షిక మరియు ముందుగా సిద్ధం చేసిన ప్రాంప్ట్ టెంప్లేట్‌లు","Modal for Preset Prompt Templates":"ముందుగా సిద్ధం చేసిన ప్రాంప్ట్ టెంప్లేట్‌ల విండో",
+      "Paste your caption or article draft...":"మీ క్యాప్షన్ లేదా ఆర్టికల్ డ్రాఫ్ట్‌ను అతికించండి...","e.g. 5 Morning Habits for Productivity":"ఉదా. ఉత్పాదకత కోసం 5 ఉదయపు అలవాట్లు","e.g. How I Built a $10k/mo Business":"ఉదా. నేను నెలకు $10,000 వ్యాపారాన్ని ఎలా నిర్మించాను","e.g. Graphic Design":"ఉదా. గ్రాఫిక్ డిజైన్","e.g. Tech & AI":"ఉదా. టెక్నాలజీ మరియు AI","e.g. AI Fitness Coach":"ఉదా. AI ఫిట్‌నెస్ కోచ్","e.g. Claim Free Ebook":"ఉదా. ఉచిత ఈ-బుక్ పొందండి","e.g. Wireless Noise Canceling Headphones":"ఉదా. వైర్‌లెస్ నాయిస్ క్యాన్సిలింగ్ హెడ్‌ఫోన్స్","e.g. Consumer Electronics":"ఉదా. కన్స్యూమర్ ఎలక్ట్రానిక్స్",
+      "English":"ఇంగ్లీష్","हिन्दी (Hindi)":"హిందీ","বাংলা (Bengali)":"బెంగాలీ","मराठी (Marathi)":"మరాఠీ","తెలుగు (Telugu)":"తెలుగు","தமிழ் (Tamil)":"తమిళం","ಕನ್ನಡ (Kannada)":"కన్నడ","മലയാളം (Malayalam)":"మలయాళం","ગુજરાતી (Gujarati)":"గుజరాతీ","ਪੰਜਾਬੀ (Punjabi)":"పంజాబీ","اردو (Urdu)":"ఉర్దూ","ଓଡ଼ିଆ (Odia)":"ఒడియా","অসমীয়া (Assamese)":"అస్సామీ","Español (Spanish)":"స్పానిష్","Français (French)":"ఫ్రెంచ్","Deutsch (German)":"జర్మన్","Nederlands (Dutch)":"డచ్","Português (Portuguese)":"పోర్చుగీస్","Italiano (Italian)":"ఇటాలియన్","中文 (Chinese)":"చైనీస్","日本語 (Japanese)":"జపనీస్","한국어 (Korean)":"కొరియన్","العربية (Arabic)":"అరబిక్","Русский (Russian)":"రష్యన్",
+      "Core Navigation":"ప్రధాన నావిగేషన్","AI Engine":"AI ఇంజిన్","Haven":"డ్యాష్‌బోర్డ్","Idea Flow":"Idea Flow","Images & Thumbnails":"చిత్రాలు మరియు థంబ్‌నెయిల్స్","Vault":"మీడియా మరియు ఆస్తులు","Motion":"వీడియో ఎడిటర్","Management":"నిర్వహణ","Tempo":"క్యాలెండర్","Ink":"డ్రాఫ్ట్ మేనేజర్","Insights":"విశ్లేషణ","Profile Settings":"ప్రొఫైల్ సెట్టింగ్స్","Sign Out":"సైన్ అవుట్"
+    }
+  };
+  const PAGE_UI = {
+    Hindi: {
+      "Welcome to CreatorOS":"CreatorOS में आपका स्वागत है","Quick Access":"त्वरित पहुँच","Content Planner":"कंटेंट प्लानर","Post Scheduler":"पोस्ट शेड्यूलर","Schedule and organize your content calendar across platforms.":"प्लेटफ़ॉर्म पर अपना कंटेंट कैलेंडर शेड्यूल और व्यवस्थित करें।","Growth Charts":"ग्रोथ चार्ट","Track followers, engagement rates, and content performance.":"फॉलोअर्स, एंगेजमेंट रेट और कंटेंट प्रदर्शन देखें।","Open Idea Flow":"AI वर्कस्पेस खोलें","Tempo Controls":"कैलेंडर नियंत्रण","Search your posts...":"अपनी पोस्ट खोजें...","All platforms":"सभी प्लेटफ़ॉर्म","Month":"महीना","Week":"सप्ताह","Today":"आज","＋ Add Content":"＋ कंटेंट जोड़ें","Total Published":"कुल प्रकाशित","TOTAL PUBLISHED":"कुल प्रकाशित","Upcoming":"आगामी","No upcoming content.":"कोई आगामी कंटेंट नहीं।","Ink":"ड्राफ्ट मैनेजर","Upload File":"फ़ाइल अपलोड करें","Recycle Bin":"रीसायकल बिन","Favorites":"पसंदीदा","All File Types":"सभी फ़ाइल प्रकार","Text Drafts":"टेक्स्ट ड्राफ्ट","Documents":"दस्तावेज़","No Draft Files Found":"कोई ड्राफ्ट फ़ाइल नहीं मिली","Creator Insights & Growth Insights":"क्रिएटर एनालिटिक्स और ग्रोथ इनसाइट्स","Productivity Score":"उत्पादकता स्कोर","AI Tool Breakdown":"AI टूल विवरण","Productivity Summary":"उत्पादकता सारांश","Total AI Generations":"कुल AI जनरेशन","Published Content Items":"प्रकाशित कंटेंट आइटम","Top Performing Tool":"शीर्ष टूल","Profile & Platform Settings":"प्रोफ़ाइल और प्लेटफ़ॉर्म सेटिंग्स","Manage your profile picture, display name, preferred language and account settings.":"अपनी प्रोफ़ाइल तस्वीर, नाम, पसंदीदा भाषा और थीम सेटिंग प्रबंधित करें।","Account Preferences & Profile Details":"खाता प्राथमिकताएँ और प्रोफ़ाइल विवरण","Preferred Language:":"पसंदीदा भाषा:","Profile photo updated successfully.":"प्रोफ़ाइल तस्वीर सफलतापूर्वक अपडेट हुई।"
+    },
+    Kannada: {
+      "Welcome to CreatorOS":"CreatorOS ಗೆ ಸ್ವಾಗತ","Quick Access":"ತ್ವರಿತ ಪ್ರವೇಶ","Content Planner":"ವಿಷಯ ಯೋಜಕ","Post Scheduler":"ಪೋಸ್ಟ್ ವೇಳಾಪಟ್ಟಿ","Schedule and organize your content calendar across platforms.":"ಪ್ಲಾಟ್‌ಫಾರ್ಮ್‌ಗಳಾದ್ಯಂತ ನಿಮ್ಮ ವಿಷಯ ಕ್ಯಾಲೆಂಡರ್ ಅನ್ನು ಯೋಜಿಸಿ ಮತ್ತು ವ್ಯವಸ್ಥೆಗೊಳಿಸಿ.","Growth Charts":"ಬೆಳವಣಿಗೆ ಚಾರ್ಟ್‌ಗಳು","Track followers, engagement rates, and content performance.":"ಫಾಲೋವರ್‌ಗಳು, ಎಂಗೇಜ್‌ಮೆಂಟ್ ಮತ್ತು ವಿಷಯದ ಕಾರ್ಯಕ್ಷಮತೆಯನ್ನು ಗಮನಿಸಿ.","Open Idea Flow":"AI ವರ್ಕ್‌ಸ್ಪೇಸ್ ತೆರೆಯಿರಿ","Tempo Controls":"ಕ್ಯಾಲೆಂಡರ್ ನಿಯಂತ್ರಣಗಳು","Search your posts...":"ನಿಮ್ಮ ಪೋಸ್ಟ್‌ಗಳನ್ನು ಹುಡುಕಿ...","All platforms":"ಎಲ್ಲಾ ಪ್ಲಾಟ್‌ಫಾರ್ಮ್‌ಗಳು","Month":"ತಿಂಗಳು","Week":"ವಾರ","Today":"ಇಂದು","＋ Add Content":"＋ ವಿಷಯ ಸೇರಿಸಿ","TOTAL PUBLISHED":"ಒಟ್ಟು ಪ್ರಕಟಿತ","Upcoming":"ಮುಂಬರುವ","No upcoming content.":"ಯಾವುದೇ ಮುಂಬರುವ ವಿಷಯವಿಲ್ಲ.","Upload File":"ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ","Recycle Bin":"ರಿಸೈಕಲ್ ಬಿನ್","Favorites":"ಮೆಚ್ಚಿನವುಗಳು","All File Types":"ಎಲ್ಲಾ ಫೈಲ್ ಪ್ರಕಾರಗಳು","Text Drafts":"ಪಠ್ಯ ಡ್ರಾಫ್ಟ್‌ಗಳು","Documents":"ದಾಖಲೆಗಳು","No Draft Files Found":"ಯಾವುದೇ ಡ್ರಾಫ್ಟ್ ಫೈಲ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ","Creator Insights & Growth Insights":"ಕ್ರಿಯೇಟರ್ ಅನಾಲಿಟಿಕ್ಸ್ ಮತ್ತು ಬೆಳವಣಿಗೆ ಒಳನೋಟಗಳು","Productivity Score":"ಉತ್ಪಾದಕತೆ ಸ್ಕೋರ್","AI Tool Breakdown":"AI ಟೂಲ್ ವಿವರ","Productivity Summary":"ಉತ್ಪಾದಕತೆ ಸಾರಾಂಶ","Total AI Generations":"ಒಟ್ಟು AI ಜನರೇಷನ್‌ಗಳು","Published Content Items":"ಪ್ರಕಟಿತ ವಿಷಯ ಐಟಂಗಳು","Top Performing Tool":"ಅತ್ಯುತ್ತಮ ಟೂಲ್","Profile & Platform Settings":"ಪ್ರೊಫೈಲ್ ಮತ್ತು ಪ್ಲಾಟ್‌ಫಾರ್ಮ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು","Manage your profile picture, display name, preferred language and account settings.":"ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಚಿತ್ರ, ಹೆಸರು, ಆದ್ಯತೆಯ ಭಾಷೆ ಮತ್ತು ಥೀಮ್ ಆದ್ಯತೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ.","Account Preferences & Profile Details":"ಖಾತೆ ಆದ್ಯತೆಗಳು ಮತ್ತು ಪ್ರೊಫೈಲ್ ವಿವರಗಳು","Preferred Language:":"ಆದ್ಯತೆಯ ಭಾಷೆ:","Profile photo updated successfully.":"ಪ್ರೊಫೈಲ್ ಚಿತ್ರ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ."
+    },
+    Telugu: {
+      "Welcome to CreatorOS":"CreatorOS కు స్వాగతం","Quick Access":"త్వరిత ప్రాప్యత","Content Planner":"కంటెంట్ ప్లానర్","Post Scheduler":"పోస్ట్ షెడ్యూలర్","Schedule and organize your content calendar across platforms.":"ప్లాట్‌ఫారమ్‌లలో మీ కంటెంట్ క్యాలెండర్‌ను షెడ్యూల్ చేసి నిర్వహించండి.","Growth Charts":"గ్రోత్ చార్ట్స్","Track followers, engagement rates, and content performance.":"ఫాలోవర్లు, ఎంగేజ్‌మెంట్ రేట్లు మరియు కంటెంట్ పనితీరును ట్రాక్ చేయండి.","Open Idea Flow":"AI వర్క్‌స్పేస్ తెరవండి","Tempo Controls":"క్యాలెండర్ నియంత్రణలు","Search your posts...":"మీ పోస్టులను వెతకండి...","All platforms":"అన్ని ప్లాట్‌ఫారమ్‌లు","Month":"నెల","Week":"వారం","Today":"ఈ రోజు","＋ Add Content":"＋ కంటెంట్ జోడించండి","TOTAL PUBLISHED":"మొత్తం ప్రచురించినవి","Upcoming":"రాబోయేవి","No upcoming content.":"రాబోయే కంటెంట్ ఏదీ లేదు.","Upload File":"ఫైల్ అప్‌లోడ్ చేయండి","Recycle Bin":"రీసైకిల్ బిన్","Favorites":"ఇష్టమైనవి","All File Types":"అన్ని ఫైల్ రకాలు","Text Drafts":"టెక్స్ట్ డ్రాఫ్ట్‌లు","Documents":"డాక్యుమెంట్లు","No Draft Files Found":"డ్రాఫ్ట్ ఫైళ్లు ఏవీ కనబడలేదు","Creator Insights & Growth Insights":"క్రియేటర్ అనలిటిక్స్ మరియు గ్రోత్ ఇన్‌సైట్స్","Productivity Score":"ఉత్పాదకత స్కోర్","AI Tool Breakdown":"AI టూల్ వివరాలు","Productivity Summary":"ఉత్పాదకత సారాంశం","Total AI Generations":"మొత్తం AI జనరేషన్లు","Published Content Items":"ప్రచురించిన కంటెంట్ ఐటమ్‌లు","Top Performing Tool":"అత్యుత్తమ టూల్","Profile & Platform Settings":"ప్రొఫైల్ మరియు ప్లాట్‌ఫారమ్ సెట్టింగ్స్","Manage your profile picture, display name, preferred language and account settings.":"మీ ప్రొఫైల్ ఫోటో, పేరు, ఇష్టమైన భాష మరియు థీమ్ ప్రాధాన్యతలను నిర్వహించండి.","Account Preferences & Profile Details":"ఖాతా ప్రాధాన్యతలు మరియు ప్రొఫైల్ వివరాలు","Preferred Language:":"ఎంచుకున్న భాష:","Profile photo updated successfully.":"ప్రొఫైల్ ఫోటో విజయవంతంగా నవీకరించబడింది."
+    },
+    Tamil: {
+      "Welcome to CreatorOS":"CreatorOS க்கு வரவேற்கிறோம்","Quick Access":"விரைவு அணுகல்","Content Planner":"உள்ளடக்க திட்டமிடுபவர்","Post Scheduler":"பதிவு திட்டமிடுபவர்","Open Idea Flow":"AI பணியகத்தைத் திறக்கவும்","Tempo Controls":"காலண்டர் கட்டுப்பாடுகள்","Search your posts...":"உங்கள் பதிவுகளைத் தேடுங்கள்...","All platforms":"அனைத்து தளங்கள்","Month":"மாதம்","Week":"வாரம்","Today":"இன்று","＋ Add Content":"＋ உள்ளடக்கத்தைச் சேர்க்கவும்","TOTAL PUBLISHED":"மொத்த வெளியீடுகள்","Upcoming":"வரவிருப்பவை","No upcoming content.":"வரவிருக்கும் உள்ளடக்கம் இல்லை.","Upload File":"கோப்பைப் பதிவேற்றவும்","Recycle Bin":"மறுசுழற்சி தொட்டி","Favorites":"பிடித்தவை","All File Types":"அனைத்து கோப்பு வகைகள்","Documents":"ஆவணங்கள்","Productivity Score":"உற்பத்தித்திறன் மதிப்பெண்","AI Tool Breakdown":"AI கருவி விவரம்","Productivity Summary":"உற்பத்தித்திறன் சுருக்கம்","Total AI Generations":"மொத்த AI உருவாக்கங்கள்","Published Content Items":"வெளியிடப்பட்ட உள்ளடக்கங்கள்","Top Performing Tool":"சிறந்த கருவி","Profile & Platform Settings":"சுயவிவரம் மற்றும் தள அமைப்புகள்","Preferred Language:":"விருப்ப மொழி:"
+    }
+  };
+  const PAGE_MORE = {
+    Hindi:{
+      "Tempo":"कैलेंडर","Plan your posts, keep drafts visible, and see your publishing schedule at a glance.":"अपनी पोस्ट की योजना बनाएं, ड्राफ्ट देखें और प्रकाशन शेड्यूल एक नज़र में देखें।","SEARCH":"खोजें","PLATFORM":"प्लेटफ़ॉर्म","STATUS":"स्थिति","Search your posts...":"अपनी पोस्ट खोजें...","All platforms":"सभी प्लेटफ़ॉर्म","Month":"महीना","Week":"सप्ताह","Add Content":"कंटेंट जोड़ें","Total Published":"कुल प्रकाशित","Upcoming":"आगामी","No upcoming content.":"कोई आगामी कंटेंट नहीं है।","Add Content":"कंटेंट जोड़ें","TITLE":"शीर्षक","TIME":"समय","NOTES":"नोट्स","Cancel":"रद्द करें","Save Content":"कंटेंट सहेजें","Delete":"हटाएँ","Ink":"ड्राफ्ट मैनेजर","Upload images, videos & documents, auto-save drafts, and keep your creative work organized.":"इमेज, वीडियो और दस्तावेज़ अपलोड करें, ड्राफ्ट अपने आप सेव करें और काम व्यवस्थित रखें।","Search draft titles or content...":"ड्राफ्ट शीर्षक या कंटेंट खोजें...","Images":"इमेज","Videos":"वीडियो","Documents":"दस्तावेज़","Text Drafts":"टेक्स्ट ड्राफ्ट","No Draft Files Found":"कोई ड्राफ्ट फ़ाइल नहीं मिली","Upload Your First File":"अपनी पहली फ़ाइल अपलोड करें","View/Download File":"फ़ाइल देखें/डाउनलोड करें","Move draft to Recycle Bin?":"ड्राफ्ट को रीसायकल बिन में भेजें?","Insights":"एनालिटिक्स","AI tool distribution & productivity score.":"AI टूल वितरण और उत्पादकता स्कोर।","Period:":"अवधि:","Questions worth asking":"पूछने योग्य प्रश्न","Generate AI Content":"AI कंटेंट बनाएँ","Schedule Posts":"पोस्ट शेड्यूल करें","Idea Flow & Content Studio":"AI वर्कस्पेस और कंटेंट स्टूडियो","Turn your ideas into captions, scripts and more.":"कुछ सेकंड में कैप्शन, स्क्रिप्ट, हैशटैग, बायो और SEO कीवर्ड बनाएँ।","Select AI Tool":"AI टूल चुनें","TOOL SETTINGS":"टूल सेटिंग्स","Topic or Keyword":"विषय या कीवर्ड","Target Platform":"लक्षित प्लेटफ़ॉर्म","Tone of Voice":"लेखन शैली","Generate Caption":"कैप्शन बनाएँ","Video Concept / Topic":"वीडियो विषय / टॉपिक","Video Format":"वीडियो प्रारूप","Duration":"अवधि","Generate Script":"स्क्रिप्ट बनाएँ","Main Keyword / Topic":"मुख्य कीवर्ड / विषय","Platform":"प्लेटफ़ॉर्म","Creator Niche":"क्रिएटर क्षेत्र","Generate Hashtags":"हैशटैग बनाएँ","Industry / Niche":"उद्योग / क्षेत्र","Personality":"व्यक्तित्व","Call To Action (CTA)":"कॉल टू एक्शन (CTA)","Generate Bios":"बायो बनाएँ","Paste Original Draft":"मूल ड्राफ्ट पेस्ट करें","Target Tone":"लक्षित शैली","Rewrite Text":"टेक्स्ट फिर से लिखें","Topic or Product":"विषय या उत्पाद","Industry Sector":"उद्योग क्षेत्र","Generate SEO Report":"SEO रिपोर्ट बनाएँ","AI Generation Output":"AI आउटपुट","Select a tool and click generate":"टूल चुनें और जनरेट करें","Copy":"कॉपी","Preset Prompt Templates":"प्रीसेट प्रॉम्प्ट टेम्पलेट्स","Welcome Back":"वापसी पर स्वागत है","Email Address":"ईमेल पता","Password":"पासवर्ड","Forgot Password?":"पासवर्ड भूल गए?","Keep me signed in on this device":"इस डिवाइस पर साइन इन रखें","Sign In to CreatorOS":"CreatorOS में साइन इन करें","Create One Now":"अभी अकाउंट बनाएँ","Profile & Platform Settings":"प्रोफ़ाइल और प्लेटफ़ॉर्म सेटिंग्स","Manage your profile picture, display name, preferred language and account settings.":"प्रोफ़ाइल तस्वीर, नाम, पसंदीदा भाषा और थीम सेटिंग प्रबंधित करें।","Full Display Name":"पूरा नाम","Default Theme Selection":"डिफ़ॉल्ट थीम","Security & Password":"सुरक्षा और पासवर्ड","New Password (Leave blank to keep current)":"नया पासवर्ड (वर्तमान रखने के लिए खाली छोड़ें)","Save Changes":"परिवर्तन सहेजें"
+    },
+    Kannada:{
+      "Plan your posts, keep drafts visible, and see your publishing schedule at a glance.":"ನಿಮ್ಮ ಪೋಸ್ಟ್‌ಗಳನ್ನು ಯೋಜಿಸಿ, ಡ್ರಾಫ್ಟ್‌ಗಳನ್ನು ನೋಡಿ ಮತ್ತು ಪ್ರಕಟಣೆಯ ವೇಳಾಪಟ್ಟಿಯನ್ನು ಒಂದೇ ನೋಟದಲ್ಲಿ ತಿಳಿಯಿರಿ.","SEARCH":"ಹುಡುಕಿ","PLATFORM":"ಪ್ಲಾಟ್‌ಫಾರ್ಮ್","STATUS":"ಸ್ಥಿತಿ","Search your posts...":"ನಿಮ್ಮ ಪೋಸ್ಟ್‌ಗಳನ್ನು ಹುಡುಕಿ...","All platforms":"ಎಲ್ಲಾ ಪ್ಲಾಟ್‌ಫಾರ್ಮ್‌ಗಳು","Month":"ತಿಂಗಳು","Week":"ವಾರ","Add Content":"ವಿಷಯ ಸೇರಿಸಿ","Total Published":"ಒಟ್ಟು ಪ್ರಕಟಿತ","Upcoming":"ಮುಂಬರುವ","No upcoming content.":"ಯಾವುದೇ ಮುಂಬರುವ ವಿಷಯವಿಲ್ಲ.","TITLE":"ಶೀರ್ಷಿಕೆ","TIME":"ಸಮಯ","NOTES":"ಟಿಪ್ಪಣಿಗಳು","Cancel":"ರದ್ದುಮಾಡಿ","Save Content":"ವಿಷಯ ಉಳಿಸಿ","Delete":"ಅಳಿಸಿ","Upload images, videos & documents, auto-save drafts, and keep your creative work organized.":"ಚಿತ್ರಗಳು, ವೀಡಿಯೋಗಳು ಮತ್ತು ದಾಖಲೆಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ, ಡ್ರಾಫ್ಟ್‌ಗಳನ್ನು ಸ್ವಯಂ ಉಳಿಸಿ ಮತ್ತು ನಿಮ್ಮ ಕೆಲಸವನ್ನು ವ್ಯವಸ್ಥೆಗೊಳಿಸಿ.","Search draft titles or content...":"ಡ್ರಾಫ್ಟ್ ಶೀರ್ಷಿಕೆ ಅಥವಾ ವಿಷಯ ಹುಡುಕಿ...","Images":"ಚಿತ್ರಗಳು","Videos":"ವೀಡಿಯೋಗಳು","Documents":"ದಾಖಲೆಗಳು","No Draft Files Found":"ಯಾವುದೇ ಡ್ರಾಫ್ಟ್ ಫೈಲ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ","Upload Your First File":"ನಿಮ್ಮ ಮೊದಲ ಫೈಲ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ","Insights":"ವಿಶ್ಲೇಷಣೆ","AI tool distribution & productivity score.":"AI ಟೂಲ್ ವಿತರಣೆ ಮತ್ತು ಉತ್ಪಾದಕತೆ ಸ್ಕೋರ್.","Period:":"ಅವಧಿ:","Questions worth asking":"ಕೇಳಬಹುದಾದ ಪ್ರಶ್ನೆಗಳು","Generate AI Content":"AI ವಿಷಯ ರಚಿಸಿ","Schedule Posts":"ಪೋಸ್ಟ್‌ಗಳನ್ನು ವೇಳಾಪಟ್ಟಿ ಮಾಡಿ","Idea Flow & Content Studio":"AI ವರ್ಕ್‌ಸ್ಪೇಸ್ ಮತ್ತು ಕಂಟೆಂಟ್ ಸ್ಟುಡಿಯೋ","Turn your ideas into captions, scripts and more.":"ಕೆಲವೇ ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಕ್ಯಾಪ್ಶನ್, ಸ್ಕ್ರಿಪ್ಟ್, ಹ್ಯಾಶ್‌ಟ್ಯಾಗ್, ಬಯೋ ಮತ್ತು SEO ಕೀವರ್ಡ್‌ಗಳನ್ನು ರಚಿಸಿ.","Select AI Tool":"AI ಟೂಲ್ ಆಯ್ಕೆಮಾಡಿ","TOOL SETTINGS":"ಟೂಲ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು","Topic or Keyword":"ವಿಷಯ ಅಥವಾ ಕೀವರ್ಡ್","Target Platform":"ಗುರಿ ಪ್ಲಾಟ್‌ಫಾರ್ಮ್","Tone of Voice":"ಬರಹದ ಶೈಲಿ","Generate Caption":"ಕ್ಯಾಪ್ಶನ್ ರಚಿಸಿ","Video Concept / Topic":"ವೀಡಿಯೋ ವಿಷಯ / ಟಾಪಿಕ್","Video Format":"ವೀಡಿಯೋ ಸ್ವರೂಪ","Duration":"ಅವಧಿ","Generate Script":"ಸ್ಕ್ರಿಪ್ಟ್ ರಚಿಸಿ","Main Keyword / Topic":"ಮುಖ್ಯ ಕೀವರ್ಡ್ / ವಿಷಯ","Generate Hashtags":"ಹ್ಯಾಶ್‌ಟ್ಯಾಗ್ ರಚಿಸಿ","Industry / Niche":"ಉದ್ಯಮ / ಕ್ಷೇತ್ರ","Personality":"ವ್ಯಕ್ತಿತ್ವ","Call To Action (CTA)":"ಕಾಲ್ ಟು ಆಕ್ಷನ್ (CTA)","Generate Bios":"ಬಯೋಗಳನ್ನು ರಚಿಸಿ","Paste Original Draft":"ಮೂಲ ಡ್ರಾಫ್ಟ್ ಅಂಟಿಸಿ","Target Tone":"ಗುರಿ ಶೈಲಿ","Rewrite Text":"ಪಠ್ಯ ಮರುಬರೆಯಿರಿ","Topic or Product":"ವಿಷಯ ಅಥವಾ ಉತ್ಪನ್ನ","Industry Sector":"ಉದ್ಯಮ ಕ್ಷೇತ್ರ","Generate SEO Report":"SEO ವರದಿ ರಚಿಸಿ","AI Generation Output":"AI ಫಲಿತಾಂಶ","Select a tool and click generate":"ಟೂಲ್ ಆಯ್ಕೆ ಮಾಡಿ ಮತ್ತು ರಚಿಸಿ","Copy":"ನಕಲಿಸಿ","Preset Prompt Templates":"ಪೂರ್ವನಿರ್ಧರಿತ ಪ್ರಾಂಪ್ಟ್ ಟೆಂಪ್ಲೇಟ್‌ಗಳು","Welcome Back":"ಮತ್ತೆ ಸ್ವಾಗತ","Email Address":"ಇಮೇಲ್ ವಿಳಾಸ","Password":"ಪಾಸ್‌ವರ್ಡ್","Forgot Password?":"ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ?","Keep me signed in on this device":"ಈ ಸಾಧನದಲ್ಲಿ ಸೈನ್ ಇನ್ ಇರಿಸಿ","Sign In to CreatorOS":"CreatorOS ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ","Create One Now":"ಈಗ ಖಾತೆ ರಚಿಸಿ","New Password (Leave blank to keep current)":"ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ (ಪ್ರಸ್ತುತವನ್ನು ಉಳಿಸಲು ಖಾಲಿ ಬಿಡಿ)","Save Changes":"ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ"
+    },
+    Telugu:{
+      "Plan your posts, keep drafts visible, and see your publishing schedule at a glance.":"మీ పోస్టులను ప్లాన్ చేసి, డ్రాఫ్ట్‌లను చూసి, ప్రచురణ షెడ్యూల్‌ను ఒకే చూపులో తెలుసుకోండి.","SEARCH":"వెతకండి","PLATFORM":"ప్లాట్‌ఫారమ్","STATUS":"స్థితి","Search your posts...":"మీ పోస్టులను వెతకండి...","All platforms":"అన్ని ప్లాట్‌ఫారమ్‌లు","Month":"నెల","Week":"వారం","Add Content":"కంటెంట్ జోడించండి","Total Published":"మొత్తం ప్రచురించినవి","Upcoming":"రాబోయేవి","No upcoming content.":"రాబోయే కంటెంట్ ఏదీ లేదు.","TITLE":"శీర్షిక","TIME":"సమయం","NOTES":"గమనికలు","Cancel":"రద్దు చేయండి","Save Content":"కంటెంట్ సేవ్ చేయండి","Delete":"తొలగించండి","Upload images, videos & documents, auto-save drafts, and keep your creative work organized.":"చిత్రాలు, వీడియోలు మరియు డాక్యుమెంట్లను అప్‌లోడ్ చేసి, డ్రాఫ్ట్‌లను ఆటో-సేవ్ చేసి మీ పని క్రమబద్ధంగా ఉంచండి.","Search draft titles or content...":"డ్రాఫ్ట్ శీర్షికలు లేదా కంటెంట్‌ను వెతకండి...","Images":"చిత్రాలు","Videos":"వీడియోలు","Documents":"డాక్యుమెంట్లు","No Draft Files Found":"డ్రాఫ్ట్ ఫైళ్లు ఏవీ కనబడలేదు","Upload Your First File":"మీ మొదటి ఫైల్‌ను అప్‌లోడ్ చేయండి","Insights":"అనలిటిక్స్","AI tool distribution & productivity score.":"AI టూల్ పంపిణీ మరియు ఉత్పాదకత స్కోర్.","Period:":"కాలం:","Questions worth asking":"అడగదగిన ప్రశ్నలు","Generate AI Content":"AI కంటెంట్ రూపొందించండి","Schedule Posts":"పోస్టులను షెడ్యూల్ చేయండి","Idea Flow & Content Studio":"AI వర్క్‌స్పేస్ మరియు కంటెంట్ స్టూడియో","Turn your ideas into captions, scripts and more.":"కొన్ని సెకన్లలో క్యాప్షన్‌లు, స్క్రిప్ట్‌లు, హ్యాష్‌ట్యాగ్‌లు, బయోలు మరియు SEO కీవర్డ్‌లను రూపొందించండి.","Select AI Tool":"AI టూల్ ఎంచుకోండి","TOOL SETTINGS":"టూల్ సెట్టింగ్స్","Topic or Keyword":"విషయం లేదా కీవర్డ్","Target Platform":"లక్ష్య ప్లాట్‌ఫారమ్","Tone of Voice":"రచనా శైలి","Generate Caption":"క్యాప్షన్ రూపొందించండి","Video Concept / Topic":"వీడియో విషయం / టాపిక్","Video Format":"వీడియో ఫార్మాట్","Duration":"వ్యవధి","Generate Script":"స్క్రిప్ట్ రూపొందించండి","Main Keyword / Topic":"ప్రధాన కీవర్డ్ / విషయం","Generate Hashtags":"హ్యాష్‌ట్యాగ్‌లు రూపొందించండి","Industry / Niche":"పరిశ్రమ / నిచ్","Personality":"వ్యక్తిత్వం","Call To Action (CTA)":"కాల్ టు యాక్షన్ (CTA)","Generate Bios":"బయోలు రూపొందించండి","Paste Original Draft":"మూల డ్రాఫ్ట్‌ను పేస్ట్ చేయండి","Target Tone":"లక్ష్య టోన్","Rewrite Text":"టెక్స్ట్‌ను రీరైట్ చేయండి","Topic or Product":"విషయం లేదా ఉత్పత్తి","Industry Sector":"పరిశ్రమ రంగం","Generate SEO Report":"SEO రిపోర్ట్ రూపొందించండి","AI Generation Output":"AI ఫలితం","Select a tool and click generate":"టూల్ ఎంచుకుని రూపొందించండి","Copy":"కాపీ","Preset Prompt Templates":"ప్రీ-సెట్ ప్రాంప్ట్ టెంప్లేట్‌లు","Welcome Back":"మళ్లీ స్వాగతం","Email Address":"ఇమెయిల్ చిరునామా","Password":"పాస్‌వర్డ్","Forgot Password?":"పాస్‌వర్డ్ మర్చిపోయారా?","Keep me signed in on this device":"ఈ పరికరంలో సైన్ ఇన్‌గా ఉంచండి","Sign In to CreatorOS":"CreatorOS కు సైన్ ఇన్ చేయండి","Create One Now":"ఇప్పుడే ఖాతా సృష్టించండి","New Password (Leave blank to keep current)":"కొత్త పాస్‌వర్డ్ (ప్రస్తుతాన్ని ఉంచాలంటే ఖాళీగా ఉంచండి)","Save Changes":"మార్పులను సేవ్ చేయండి"
+    },
+    Tamil:{
+      "Plan your posts, keep drafts visible, and see your publishing schedule at a glance.":"உங்கள் பதிவுகளைத் திட்டமிட்டு, வரைவுகளைப் பார்த்து, வெளியீட்டு அட்டவணையை ஒரே பார்வையில் காணுங்கள்.","SEARCH":"தேடல்","PLATFORM":"தளம்","STATUS":"நிலை","Search your posts...":"உங்கள் பதிவுகளைத் தேடுங்கள்...","All platforms":"அனைத்து தளங்கள்","Month":"மாதம்","Week":"வாரம்","Add Content":"உள்ளடக்கத்தைச் சேர்க்கவும்","Total Published":"மொத்த வெளியீடுகள்","Upcoming":"வரவிருப்பவை","No upcoming content.":"வரவிருக்கும் உள்ளடக்கம் இல்லை.","TITLE":"தலைப்பு","TIME":"நேரம்","NOTES":"குறிப்புகள்","Cancel":"ரத்து செய்","Save Content":"உள்ளடக்கத்தைச் சேமி","Delete":"நீக்கு","Upload images, videos & documents, auto-save drafts, and keep your creative work organized.":"படங்கள், வீடியோக்கள் மற்றும் ஆவணங்களைப் பதிவேற்றி, வரைவுகளை தானாகச் சேமித்து உங்கள் பணியை ஒழுங்குபடுத்துங்கள்.","Search draft titles or content...":"வரைவு தலைப்புகள் அல்லது உள்ளடக்கத்தைத் தேடுங்கள்...","Images":"படங்கள்","Videos":"வீடியோக்கள்","Documents":"ஆவணங்கள்","No Draft Files Found":"வரைவு கோப்புகள் எதுவும் கிடைக்கவில்லை","Upload Your First File":"உங்கள் முதல் கோப்பைப் பதிவேற்றவும்","Insights":"பகுப்பாய்வு","AI tool distribution & productivity score.":"AI கருவி பயன்பாடு மற்றும் உற்பத்தித்திறன் மதிப்பெண்.","Period:":"காலம்:","Questions worth asking":"கேட்கக்கூடிய கேள்விகள்","Generate AI Content":"AI உள்ளடக்கத்தை உருவாக்கவும்","Schedule Posts":"பதிவுகளை திட்டமிடவும்","Idea Flow & Content Studio":"AI பணியகம் மற்றும் உள்ளடக்க ஸ்டுடியோ","Turn your ideas into captions, scripts and more.":"சில விநாடிகளில் கேப்ஷன்கள், ஸ்கிரிப்ட்கள், ஹேஷ்டேக்குகள், பயோக்கள் மற்றும் SEO முக்கிய வார்த்தைகளை உருவாக்குங்கள்.","Select AI Tool":"AI கருவியைத் தேர்ந்தெடுக்கவும்","TOOL SETTINGS":"கருவி அமைப்புகள்","Topic or Keyword":"தலைப்பு அல்லது முக்கிய வார்த்தை","Target Platform":"இலக்கு தளம்","Tone of Voice":"எழுத்து நடை","Generate Caption":"கேப்ஷனை உருவாக்கு","Video Concept / Topic":"வீடியோ தலைப்பு / கருத்து","Video Format":"வீடியோ வடிவம்","Duration":"கால அளவு","Generate Script":"ஸ்கிரிப்டை உருவாக்கு","Main Keyword / Topic":"முக்கிய வார்த்தை / தலைப்பு","Generate Hashtags":"ஹேஷ்டேக்குகளை உருவாக்கு","Industry / Niche":"தொழில் / நிச்","Personality":"தன்மை","Call To Action (CTA)":"செயலுக்கு அழைப்பு (CTA)","Generate Bios":"பயோக்களை உருவாக்கு","Paste Original Draft":"அசல் வரைவைக் ஒட்டவும்","Target Tone":"இலக்கு நடை","Rewrite Text":"உரையை மறுஎழுது","Topic or Product":"தலைப்பு அல்லது தயாரிப்பு","Industry Sector":"தொழில் துறை","Generate SEO Report":"SEO அறிக்கையை உருவாக்கு","AI Generation Output":"AI முடிவு","Select a tool and click generate":"கருவியைத் தேர்ந்தெடுத்து உருவாக்கவும்","Copy":"நகலெடு","Preset Prompt Templates":"முன்னமைக்கப்பட்ட பிராம்ப்ட் வார்ப்புருக்கள்","Welcome Back":"மீண்டும் வரவேற்கிறோம்","Email Address":"மின்னஞ்சல் முகவரி","Password":"கடவுச்சொல்","Forgot Password?":"கடவுச்சொல்லை மறந்துவிட்டீர்களா?","Keep me signed in on this device":"இந்த சாதனத்தில் உள்நுழைந்தே இருக்கவும்","Sign In to CreatorOS":"CreatorOS இல் உள்நுழைக","Create One Now":"இப்போது கணக்கை உருவாக்கவும்","New Password (Leave blank to keep current)":"புதிய கடவுச்சொல் (தற்போதையதை வைத்திருக்க காலியாக விடவும்)","Save Changes":"மாற்றங்களைச் சேமிக்கவும்"
+    }
+  };
+  const UNIVERSAL = {
+    Hindi: {
+      'Personal Information':'व्यक्तिगत जानकारी','Social Profiles':'सोशल प्रोफाइल','Date of Birth':'जन्म तिथि','Phone Number':'फोन नंबर','Gender':'लिंग','Prefer not to say':'बताना नहीं चाहते','Female':'महिला','Male':'पुरुष','Other':'अन्य','Location':'स्थान','About Me':'मेरे बारे में','Instagram':'इंस्टाग्राम','YouTube':'यूट्यूब','LinkedIn':'लिंक्डइन','Optional':'वैकल्पिक','City, Country':'शहर, देश','Tell us a little about yourself...':'अपने बारे में थोड़ा बताएं...','Channel name':'चैनल का नाम','Profile name':'प्रोफ़ाइल नाम','TOTAL':'कुल','SCHEDULED':'शेड्यूल किए गए','PUBLISHED':'प्रकाशित','Scheduled':'शेड्यूल किया गया','Published':'प्रकाशित','Draft':'ड्राफ्ट','MON':'सोम','TUE':'मंगल','WED':'बुध','THU':'गुरु','FRI':'शुक्र','SAT':'शनि','SUN':'रवि','SEARCH':'खोजें','PLATFORM':'प्लेटफ़ॉर्म','All platforms':'सभी प्लेटफ़ॉर्म','Today':'आज','Month':'महीना','Week':'सप्ताह','Personal Information':'व्यक्तिगत जानकारी','Social Profiles':'सोशल प्रोफाइल','Productivity Score':'उत्पादकता स्कोर','AI Tool Breakdown':'AI टूल विवरण','Productivity Summary':'उत्पादकता सारांश','Total AI Generations':'कुल AI जनरेशन','Published Content Items':'प्रकाशित कंटेंट आइटम','Top Performing Tool':'शीर्ष टूल'},
+    Kannada: {
+      'Personal Information':'ವೈಯಕ್ತಿಕ ಮಾಹಿತಿ','Social Profiles':'ಸಾಮಾಜಿಕ ಪ್ರೊಫೈಲ್‌ಗಳು','Date of Birth':'ಜನ್ಮ ದಿನಾಂಕ','Phone Number':'ದೂರವಾಣಿ ಸಂಖ್ಯೆ','Gender':'ಲಿಂಗ','Prefer not to say':'ಹೇಳಲು ಇಷ್ಟವಿಲ್ಲ','Female':'ಮಹಿಳೆ','Male':'ಪುರುಷ','Other':'ಇತರೆ','Location':'ಸ್ಥಳ','About Me':'ನನ್ನ ಬಗ್ಗೆ','Instagram':'ಇನ್‌ಸ್ಟಾಗ್ರಾಮ್','YouTube':'ಯೂಟ್ಯೂಬ್','LinkedIn':'ಲಿಂಕ್ಡ್‌ಇನ್','Optional':'ಐಚ್ಛಿಕ','City, Country':'ನಗರ, ದೇಶ','Tell us a little about yourself...':'ನಿಮ್ಮ ಬಗ್ಗೆ ಸ್ವಲ್ಪ ತಿಳಿಸಿ...','Channel name':'ಚಾನೆಲ್ ಹೆಸರು','Profile name':'ಪ್ರೊಫೈಲ್ ಹೆಸರು','TOTAL':'ಒಟ್ಟು','SCHEDULED':'ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿರುವವು','PUBLISHED':'ಪ್ರಕಟಿತ','Scheduled':'ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿರುವುದು','Published':'ಪ್ರಕಟಿತ','Draft':'ಡ್ರಾಫ್ಟ್','MON':'ಸೋಮ','TUE':'ಮಂಗಳ','WED':'ಬುಧ','THU':'ಗುರು','FRI':'ಶುಕ್ರ','SAT':'ಶನಿ','SUN':'ಭಾನು','SEARCH':'ಹುಡುಕಿ','PLATFORM':'ಪ್ಲಾಟ್‌ಫಾರ್ಮ್','All platforms':'ಎಲ್ಲಾ ಪ್ಲಾಟ್‌ಫಾರ್ಮ್‌ಗಳು','Today':'ಇಂದು','Month':'ತಿಂಗಳು','Week':'ವಾರ','Productivity Score':'ಉತ್ಪಾದಕತೆ ಸ್ಕೋರ್','AI Tool Breakdown':'AI ಟೂಲ್ ವಿವರ','Productivity Summary':'ಉತ್ಪಾದಕತೆ ಸಾರಾಂಶ','Total AI Generations':'ಒಟ್ಟು AI ಜನರೇಷನ್‌ಗಳು','Published Content Items':'ಪ್ರಕಟಿತ ವಿಷಯಗಳು','Top Performing Tool':'ಅತ್ಯುತ್ತಮ ಟೂಲ್'},
+    Telugu: {
+      'Personal Information':'వ్యక్తిగత సమాచారం','Social Profiles':'సోషల్ ప్రొఫైల్స్','Date of Birth':'పుట్టిన తేదీ','Phone Number':'ఫోన్ నంబర్','Gender':'లింగం','Prefer not to say':'చెప్పడం ఇష్టం లేదు','Female':'మహిళ','Male':'పురుషుడు','Other':'ఇతర','Location':'స్థానం','About Me':'నా గురించి','Instagram':'ఇన్‌స్టాగ్రామ్','YouTube':'యూట్యూబ్','LinkedIn':'లింక్డ్‌ఇన్','Optional':'ఐచ్ఛికం','City, Country':'నగరం, దేశం','Tell us a little about yourself...':'మీ గురించి కొంచెం చెప్పండి...','Channel name':'ఛానల్ పేరు','Profile name':'ప్రొఫైల్ పేరు','TOTAL':'మొత్తం','SCHEDULED':'షెడ్యూల్ చేసినవి','PUBLISHED':'ప్రచురించినవి','Scheduled':'షెడ్యూల్ చేసినది','Published':'ప్రచురించినది','Draft':'డ్రాఫ్ట్','MON':'సోమ','TUE':'మంగళ','WED':'బుధ','THU':'గురు','FRI':'శుక్ర','SAT':'శని','SUN':'ఆది','SEARCH':'వెతకండి','PLATFORM':'ప్లాట్‌ఫారమ్','All platforms':'అన్ని ప్లాట్‌ఫారమ్‌లు','Today':'ఈ రోజు','Month':'నెల','Week':'వారం','Productivity Score':'ఉత్పాదకత స్కోర్','AI Tool Breakdown':'AI టూల్ వివరాలు','Productivity Summary':'ఉత్పాదకత సారాంశం','Total AI Generations':'మొత్తం AI జనరేషన్లు','Published Content Items':'ప్రచురించిన కంటెంట్ అంశాలు','Top Performing Tool':'అత్యుత్తమ టూల్'},
+    Tamil: {
+      'Personal Information':'தனிப்பட்ட தகவல்','Social Profiles':'சமூக சுயவிவரங்கள்','Date of Birth':'பிறந்த தேதி','Phone Number':'தொலைபேசி எண்','Gender':'பாலினம்','Prefer not to say':'சொல்ல விரும்பவில்லை','Female':'பெண்','Male':'ஆண்','Other':'மற்றவை','Location':'இடம்','About Me':'என்னைப் பற்றி','Instagram':'இன்ஸ்டாகிராம்','YouTube':'யூடியூப்','LinkedIn':'லிங்க்ட்இன்','Optional':'விருப்பம்','City, Country':'நகரம், நாடு','Tell us a little about yourself...':'உங்களைப் பற்றி சிறிது சொல்லுங்கள்...','Channel name':'சேனல் பெயர்','Profile name':'சுயவிவரப் பெயர்','TOTAL':'மொத்தம்','SCHEDULED':'திட்டமிடப்பட்டவை','PUBLISHED':'வெளியிடப்பட்டவை','Scheduled':'திட்டமிடப்பட்டது','Published':'வெளியிடப்பட்டது','Draft':'வரைவு','MON':'திங்கள்','TUE':'செவ்வாய்','WED':'புதன்','THU':'வியாழன்','FRI':'வெள்ளி','SAT':'சனி','SUN':'ஞாயிறு','SEARCH':'தேடல்','PLATFORM':'தளம்','All platforms':'அனைத்து தளங்கள்','Today':'இன்று','Month':'மாதம்','Week':'வாரம்','Productivity Score':'உற்பத்தித்திறன் மதிப்பெண்','AI Tool Breakdown':'AI கருவி விவரம்','Productivity Summary':'உற்பத்தித்திறன் சுருக்கம்','Total AI Generations':'மொத்த AI உருவாக்கங்கள்','Published Content Items':'வெளியிடப்பட்ட உள்ளடக்கங்கள்','Top Performing Tool':'சிறந்த கருவி'}
+  };
+  const COMMON_ALL={
+Hindi:{"Core Navigation":"मुख्य नेविगेशन","AI Engine":"AI इंजन","Management":"प्रबंधन","Select AI Tool":"AI टूल चुनें","TOOL SETTINGS":"टूल सेटिंग्स","Topic or Keyword":"विषय या कीवर्ड","Target Platform":"लक्षित प्लेटफ़ॉर्म","Tone of Voice":"लेखन शैली","Video Concept / Topic":"वीडियो विषय / टॉपिक","Video Format":"वीडियो प्रारूप","Duration":"अवधि","Main Keyword / Topic":"मुख्य कीवर्ड / विषय","Creator Niche":"क्रिएटर क्षेत्र","Industry / Niche":"उद्योग / क्षेत्र","Personality":"व्यक्तित्व","Call To Action (CTA)":"कॉल टू एक्शन (CTA)","Paste Original Draft":"मूल ड्राफ्ट पेस्ट करें","Target Tone":"लक्षित शैली","Topic or Product":"विषय या उत्पाद","Industry Sector":"उद्योग क्षेत्र","Generate Caption":"कैप्शन बनाएँ","Generate Script":"स्क्रिप्ट बनाएँ","Generate Hashtags":"हैशटैग बनाएँ","Generate Bios":"बायो बनाएँ","Rewrite Text":"टेक्स्ट फिर से लिखें","Generate SEO Report":"SEO रिपोर्ट बनाएँ","Prompt Templates":"प्रॉम्प्ट टेम्पलेट्स","Copy":"कॉपी","Favorites":"पसंदीदा","Vault":"मीडिया और एसेट्स","Images & Thumbnails":"चित्र और थंबनेल","Motion":"वीडियो एडिटर","Tempo":"कैलेंडर","Ink":"ड्राफ्ट मैनेजर","Insights":"एनालिटिक्स","Profile Settings":"प्रोफ़ाइल सेटिंग्स","Save Changes":"परिवर्तन सहेजें","Today":"आज","Month":"महीना","Week":"सप्ताह","TOTAL":"कुल","SCHEDULED":"शेड्यूल किए गए","PUBLISHED":"प्रकाशित","Scheduled":"शेड्यूल किया गया","Published":"प्रकाशित","Draft":"ड्राफ्ट","Platform":"प्लेटफ़ॉर्म","SEARCH":"खोजें","Search your posts...":"अपनी पोस्ट खोजें...","All platforms":"सभी प्लेटफ़ॉर्म","Tempo Controls":"कैलेंडर नियंत्रण","Add Content":"कंटेंट जोड़ें","TOTAL CONTENT":"कुल कंटेंट","SCHEDULED CONTENT":"शेड्यूल किया गया कंटेंट","PUBLISHED CONTENT":"प्रकाशित कंटेंट","No content in this category.":"इस श्रेणी में कोई कंटेंट नहीं है।","Creator Insights & Growth Insights":"क्रिएटर एनालिटिक्स और ग्रोथ इनसाइट्स","Productivity Score":"उत्पादकता स्कोर","Productivity Summary":"उत्पादकता सारांश","Total AI Generations":"कुल AI जनरेशन","Published Content Items":"प्रकाशित कंटेंट आइटम","Scheduled Content Items":"शेड्यूल किए गए कंटेंट आइटम","Top Performing Tool":"शीर्ष टूल","Personal Information":"व्यक्तिगत जानकारी","Social Profiles":"सोशल प्रोफाइल","Date of Birth":"जन्म तिथि","Phone Number":"फोन नंबर","Gender":"लिंग","Location":"स्थान","About Me":"मेरे बारे में","Instagram":"इंस्टाग्राम","YouTube":"यूट्यूब","LinkedIn":"लिंक्डइन","Security & Password":"सुरक्षा और पासवर्ड","Sign Out of Workspace":"वर्कस्पेस से साइन आउट","Language Selection":"भाषा चयन","Default Theme Selection":"डिफ़ॉल्ट थीम चयन","Change profile photo":"प्रोफ़ाइल फोटो बदलें"},
+Kannada:{"Core Navigation":"ಮುಖ್ಯ ನ್ಯಾವಿಗೇಶನ್","AI Engine":"AI ಎಂಜಿನ್","Management":"ನಿರ್ವಹಣೆ","Select AI Tool":"AI ಟೂಲ್ ಆಯ್ಕೆಮಾಡಿ","TOOL SETTINGS":"ಟೂಲ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು","Topic or Keyword":"ವಿಷಯ ಅಥವಾ ಕೀವರ್ಡ್","Target Platform":"ಗುರಿ ಪ್ಲಾಟ್‌ಫಾರ್ಮ್","Tone of Voice":"ರಚನಾ ಶೈಲಿ","Video Concept / Topic":"ವೀಡಿಯೋ ವಿಷಯ / ಟಾಪಿಕ್","Video Format":"ವೀಡಿಯೋ ಫಾರ್ಮ್ಯಾಟ್","Duration":"ಅವಧಿ","Main Keyword / Topic":"ಮುಖ್ಯ ಕೀವರ್ಡ್ / ವಿಷಯ","Creator Niche":"ಕ್ರಿಯೇಟರ್ ಕ್ಷೇತ್ರ","Industry / Niche":"ಉದ್ಯಮ / ಕ್ಷೇತ್ರ","Personality":"ವ್ಯಕ್ತಿತ್ವ","Call To Action (CTA)":"ಕ್ರಿಯೆಗೆ ಕರೆ (CTA)","Paste Original Draft":"ಮೂಲ ಡ್ರಾಫ್ಟ್ ಅಂಟಿಸಿ","Target Tone":"ಗುರಿ ಶೈಲಿ","Topic or Product":"ವಿಷಯ ಅಥವಾ ಉತ್ಪನ್ನ","Industry Sector":"ಉದ್ಯಮ ಕ್ಷೇತ್ರ","Generate Caption":"ಕ್ಯಾಪ್ಶನ್ ರಚಿಸಿ","Generate Script":"ಸ್ಕ್ರಿಪ್ಟ್ ರಚಿಸಿ","Generate Hashtags":"ಹ್ಯಾಶ್‌ಟ್ಯಾಗ್ ರಚಿಸಿ","Generate Bios":"ಬಯೋ ರಚಿಸಿ","Rewrite Text":"ಪಠ್ಯ ಮರುಬರೆಯಿರಿ","Generate SEO Report":"SEO ವರದಿ ರಚಿಸಿ","Prompt Templates":"ಪ್ರಾಂಪ್ಟ್ ಟೆಂಪ್ಲೇಟ್‌ಗಳು","Copy":"ಕಾಪಿ","Favorites":"ಮೆಚ್ಚಿನವುಗಳು","Vault":"ಮೀಡಿಯಾ ಮತ್ತು ಆಸ್ತಿಗಳು","Images & Thumbnails":"ಚಿತ್ರಗಳು ಮತ್ತು ಥಂಬ್‌ನೇಲ್‌ಗಳು","Motion":"ವೀಡಿಯೋ ಎಡಿಟರ್","Tempo":"ಕ್ಯಾಲೆಂಡರ್","Ink":"ಡ್ರಾಫ್ಟ್ ಮ್ಯಾನೇಜರ್","Insights":"ವಿಶ್ಲೇಷಣೆ","Profile Settings":"ಪ್ರೊಫೈಲ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು","Save Changes":"ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ","Today":"ಇಂದು","Month":"ತಿಂಗಳು","Week":"ವಾರ","TOTAL":"ಒಟ್ಟು","SCHEDULED":"ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿರುವವು","PUBLISHED":"ಪ್ರಕಟಿತ","Scheduled":"ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿರುವುದು","Published":"ಪ್ರಕಟಿತ","Draft":"ಡ್ರಾಫ್ಟ್","Platform":"ಪ್ಲಾಟ್‌ಫಾರ್ಮ್","SEARCH":"ಹುಡುಕಿ","Search your posts...":"ನಿಮ್ಮ ಪೋಸ್ಟ್‌ಗಳನ್ನು ಹುಡುಕಿ...","All platforms":"ಎಲ್ಲಾ ಪ್ಲಾಟ್‌ಫಾರ್ಮ್‌ಗಳು","Tempo Controls":"ಕ್ಯಾಲೆಂಡರ್ ನಿಯಂತ್ರಣಗಳು","Add Content":"ವಿಷಯ ಸೇರಿಸಿ","TOTAL CONTENT":"ಒಟ್ಟು ವಿಷಯ","SCHEDULED CONTENT":"ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿರುವ ವಿಷಯ","PUBLISHED CONTENT":"ಪ್ರಕಟಿತ ವಿಷಯ","No content in this category.":"ಈ ವಿಭಾಗದಲ್ಲಿ ಯಾವುದೇ ವಿಷಯವಿಲ್ಲ.","Creator Insights & Growth Insights":"ಕ್ರಿಯೇಟರ್ ಅನಾಲಿಟಿಕ್ಸ್ ಮತ್ತು ಬೆಳವಣಿಗೆ ಒಳನೋಟಗಳು","Productivity Score":"ಉತ್ಪಾದಕತೆ ಸ್ಕೋರ್","Productivity Summary":"ಉತ್ಪಾದಕತೆ ಸಾರಾಂಶ","Total AI Generations":"ಒಟ್ಟು AI ಜನರೇಷನ್‌ಗಳು","Published Content Items":"ಪ್ರಕಟಿತ ವಿಷಯಗಳು","Scheduled Content Items":"ವೇಳಾಪಟ್ಟಿಯಲ್ಲಿರುವ ವಿಷಯಗಳು","Top Performing Tool":"ಅತ್ಯುತ್ತಮ ಟೂಲ್","Personal Information":"ವೈಯಕ್ತಿಕ ಮಾಹಿತಿ","Social Profiles":"ಸಾಮಾಜಿಕ ಪ್ರೊಫೈಲ್‌ಗಳು","Date of Birth":"ಜನ್ಮ ದಿನಾಂಕ","Phone Number":"ದೂರವಾಣಿ ಸಂಖ್ಯೆ","Gender":"ಲಿಂಗ","Location":"ಸ್ಥಳ","About Me":"ನನ್ನ ಬಗ್ಗೆ","Instagram":"ಇನ್‌ಸ್ಟಾಗ್ರಾಮ್","YouTube":"ಯೂಟ್ಯೂಬ್","LinkedIn":"ಲಿಂಕ್ಡ್‌ಇನ್","Security & Password":"ಭದ್ರತೆ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್","Sign Out of Workspace":"ವರ್ಕ್‌ಸ್ಪೇಸ್‌ನಿಂದ ಸೈನ್ ಔಟ್","Language Selection":"ಭಾಷೆ ಆಯ್ಕೆ","Default Theme Selection":"ಡೀಫಾಲ್ಟ್ ಥೀಮ್ ಆಯ್ಕೆ","Change profile photo":"ಪ್ರೊಫೈಲ್ ಚಿತ್ರ ಬದಲಿಸಿ"},
+Telugu:{"Core Navigation":"ప్రధాన నావిగేషన్","AI Engine":"AI ఇంజిన్","Management":"నిర్వహణ","Select AI Tool":"AI టూల్ ఎంచుకోండి","TOOL SETTINGS":"టూల్ సెట్టింగ్స్","Topic or Keyword":"విషయం లేదా కీవర్డ్","Target Platform":"లక్ష్య ప్లాట్‌ఫారమ్","Tone of Voice":"రచనా శైలి","Video Concept / Topic":"వీడియో విషయం / టాపిక్","Video Format":"వీడియో ఫార్మాట్","Duration":"వ్యవధి","Main Keyword / Topic":"ప్రధాన కీవర్డ్ / విషయం","Creator Niche":"క్రియేటర్ రంగం","Industry / Niche":"పరిశ్రమ / రంగం","Personality":"వ్యక్తిత్వం","Call To Action (CTA)":"చర్యకు పిలుపు (CTA)","Paste Original Draft":"అసలు డ్రాఫ్ట్‌ను అతికించండి","Target Tone":"లక్ష్య శైలి","Topic or Product":"విషయం లేదా ఉత్పత్తి","Industry Sector":"పరిశ్రమ రంగం","Generate Caption":"క్యాప్షన్ రూపొందించండి","Generate Script":"స్క్రిప్ట్ రూపొందించండి","Generate Hashtags":"హ్యాష్‌ట్యాగ్‌లను రూపొందించండి","Generate Bios":"బయోలను రూపొందించండి","Rewrite Text":"పాఠ్యాన్ని మళ్లీ రాయండి","Generate SEO Report":"SEO నివేదికను రూపొందించండి","Prompt Templates":"ప్రాంప్ట్ టెంప్లేట్‌లు","Copy":"కాపీ","Favorites":"ఇష్టమైనవి","Vault":"మీడియా & ఆస్తులు","Images & Thumbnails":"చిత్రాలు & థంబ్‌నెయిల్స్","Motion":"వీడియో ఎడిటర్","Tempo":"క్యాలెండర్","Ink":"డ్రాఫ్ట్ మేనేజర్","Insights":"విశ్లేషణలు","Profile Settings":"ప్రొఫైల్ సెట్టింగ్స్","Save Changes":"మార్పులను సేవ్ చేయండి","Today":"ఈ రోజు","Month":"నెల","Week":"వారం","TOTAL":"మొత్తం","SCHEDULED":"షెడ్యూల్ చేసినవి","PUBLISHED":"ప్రచురించినవి","Scheduled":"షెడ్యూల్ చేసినది","Published":"ప్రచురించినది","Draft":"డ్రాఫ్ట్","Platform":"ప్లాట్‌ఫారమ్","SEARCH":"వెతకండి","Search your posts...":"మీ పోస్ట్‌లను వెతకండి...","All platforms":"అన్ని ప్లాట్‌ఫారమ్‌లు","Tempo Controls":"క్యాలెండర్ నియంత్రణలు","Add Content":"కంటెంట్ జోడించండి","TOTAL CONTENT":"మొత్తం కంటెంట్","SCHEDULED CONTENT":"షెడ్యూల్ చేసిన కంటెంట్","PUBLISHED CONTENT":"ప్రచురించిన కంటెంట్","No content in this category.":"ఈ విభాగంలో కంటెంట్ లేదు.","Creator Insights & Growth Insights":"క్రియేటర్ అనలిటిక్స్ మరియు గ్రోత్ ఇన్‌సైట్స్","Productivity Score":"ఉత్పాదకత స్కోర్","Productivity Summary":"ఉత్పాదకత సారాంశం","Total AI Generations":"మొత్తం AI జనరేషన్లు","Published Content Items":"ప్రచురించిన కంటెంట్ అంశాలు","Scheduled Content Items":"షెడ్యూల్ చేసిన కంటెంట్ అంశాలు","Top Performing Tool":"అత్యుత్తమ టూల్","Personal Information":"వ్యక్తిగత సమాచారం","Social Profiles":"సోషల్ ప్రొఫైల్స్","Date of Birth":"పుట్టిన తేదీ","Phone Number":"ఫోన్ నంబర్","Gender":"లింగం","Location":"స్థానం","About Me":"నా గురించి","Instagram":"ఇన్‌స్టాగ్రామ్","YouTube":"యూట్యూబ్","LinkedIn":"లింక్డ్‌ఇన్","Security & Password":"భద్రత మరియు పాస్‌వర్డ్","Sign Out of Workspace":"వర్క్‌స్పేస్ నుండి సైన్ అవుట్","Language Selection":"భాష ఎంపిక","Default Theme Selection":"డిఫాల్ట్ థీమ్ ఎంపిక","Change profile photo":"ప్రొఫైల్ ఫోటో మార్చండి"},
+Tamil:{"Core Navigation":"முக்கிய வழிசெலுத்தல்","AI Engine":"AI இயந்திரம்","Management":"மேலாண்மை","Select AI Tool":"AI கருவியைத் தேர்ந்தெடுக்கவும்","TOOL SETTINGS":"கருவி அமைப்புகள்","Topic or Keyword":"தலைப்பு அல்லது முக்கிய சொல்","Target Platform":"இலக்கு தளம்","Tone of Voice":"எழுத்து நடை","Video Concept / Topic":"வீடியோ தலைப்பு","Video Format":"வீடியோ வடிவம்","Duration":"கால அளவு","Main Keyword / Topic":"முக்கிய சொல் / தலைப்பு","Creator Niche":"கிரியேட்டர் துறை","Industry / Niche":"தொழில் / துறை","Personality":"தனிப்பட்ட பாணி","Call To Action (CTA)":"செயலுக்கான அழைப்பு (CTA)","Paste Original Draft":"அசல் வரைவை ஒட்டவும்","Target Tone":"இலக்கு நடை","Topic or Product":"தலைப்பு அல்லது தயாரிப்பு","Industry Sector":"தொழில் துறை","Generate Caption":"கேப்ஷனை உருவாக்கு","Generate Script":"ஸ்கிரிப்டை உருவாக்கு","Generate Hashtags":"ஹேஷ்டேக்குகளை உருவாக்கு","Generate Bios":"பயோவை உருவாக்கு","Rewrite Text":"உரையை மறுஎழுது","Generate SEO Report":"SEO அறிக்கையை உருவாக்கு","Prompt Templates":"ப்ராம்ப்ட் டெம்ப்ளேட்கள்","Copy":"நகலெடு","Favorites":"விருப்பங்கள்","Vault":"மீடியா & சொத்துகள்","Images & Thumbnails":"படங்கள் & சிறுபடங்கள்","Motion":"வீடியோ எடிட்டர்","Tempo":"காலண்டர்","Ink":"வரைவு மேலாளர்","Insights":"பகுப்பாய்வு","Profile Settings":"சுயவிவர அமைப்புகள்","Save Changes":"மாற்றங்களை சேமிக்கவும்","Today":"இன்று","Month":"மாதம்","Week":"வாரம்","TOTAL":"மொத்தம்","SCHEDULED":"திட்டமிடப்பட்டவை","PUBLISHED":"வெளியிடப்பட்டவை","Scheduled":"திட்டமிடப்பட்டது","Published":"வெளியிடப்பட்டது","Draft":"வரைவு","Platform":"தளம்","SEARCH":"தேடல்","Search your posts...":"உங்கள் பதிவுகளைத் தேடுங்கள்...","All platforms":"அனைத்து தளங்கள்","Tempo Controls":"காலண்டர் கட்டுப்பாடுகள்","Add Content":"உள்ளடக்கத்தைச் சேர்","TOTAL CONTENT":"மொத்த உள்ளடக்கம்","SCHEDULED CONTENT":"திட்டமிடப்பட்ட உள்ளடக்கம்","PUBLISHED CONTENT":"வெளியிடப்பட்ட உள்ளடக்கம்","No content in this category.":"இந்த வகையில் உள்ளடக்கம் இல்லை.","Creator Insights & Growth Insights":"கிரியேட்டர் அனலிட்டிக்ஸ் மற்றும் வளர்ச்சி தகவல்கள்","Productivity Score":"உற்பத்தித்திறன் மதிப்பெண்","Productivity Summary":"உற்பத்தித்திறன் சுருக்கம்","Total AI Generations":"மொத்த AI உருவாக்கங்கள்","Published Content Items":"வெளியிடப்பட்ட உள்ளடக்கங்கள்","Scheduled Content Items":"திட்டமிடப்பட்ட உள்ளடக்கங்கள்","Top Performing Tool":"சிறந்த கருவி","Personal Information":"தனிப்பட்ட தகவல்","Social Profiles":"சமூக சுயவிவரங்கள்","Date of Birth":"பிறந்த தேதி","Phone Number":"தொலைபேசி எண்","Gender":"பாலினம்","Location":"இடம்","About Me":"என்னைப் பற்றி","Instagram":"இன்ஸ்டாகிராம்","YouTube":"யூடியூப்","LinkedIn":"லிங்க்ட்இன்","Security & Password":"பாதுகாப்பு மற்றும் கடவுச்சொல்","Sign Out of Workspace":"பணியகத்திலிருந்து வெளியேறு","Language Selection":"மொழி தேர்வு","Default Theme Selection":"இயல்புநிலை தீம் தேர்வு","Change profile photo":"சுயவிவரப் படத்தை மாற்று"}};
+  const map=Object.assign({}, T[LANG]||T.English, EXTRA[LANG]||{}, COMMON_EXTRA[LANG]||{}, PAGE_UI[LANG]||{}, PAGE_MORE[LANG]||{}, UNIVERSAL[LANG]||{}, COMMON_ALL[LANG]||{});
+  window.CreatorOSTranslate=(key)=>map[key]||key;
+
+  // The original language pack covered mainly the navigation and Idea Flow.
+  // Modules such as Images, Media, Motion, Tempo, Drafts and Insights also
+  // contain fixed labels, so translate those missing UI strings on every module page.
+  // User-created names/content are deliberately excluded.
+  const autoI18nSelector = 'h1,h2,h3,h4,h5,h6,label,button,option,.panel-title,.panel-subtitle,.description,.page-head p,.section-title,.card-title,.form-text,.upload-button,.asset-count,.drop-zone strong,.drop-zone span,.empty,.empty-state,.hint,.status,.heading,.preview-head,.clips-head,.recent-head,.control-section label,.cc-empty,.cc-event-status';
+  const autoI18nSkip = /(?:asset-name|asset-title|draft-title|user-content|ai-chat-bubble|ai-output-box|event-title|video-title|file-name|dynamic-content)/i;
+  const autoI18nCache = new Set();
+
+  async function translateMissingUI(root=document) {
+    if (LANG === 'English') return;
+    const scope = root.querySelectorAll ? root : document;
+    const elements = scope.matches && scope.matches(autoI18nSelector) ? [scope] : Array.from(scope.querySelectorAll ? scope.querySelectorAll(autoI18nSelector) : []);
+    const texts = [];
+    const targets = [];
+    elements.forEach(el => {
+      if (el.closest('script,style,textarea,input,[data-no-i18n]') || autoI18nSkip.test(el.className || '')) return;
+      [...el.childNodes].forEach(node => {
+        if (node.nodeType !== Node.TEXT_NODE) return;
+        const raw = node.nodeValue.trim();
+        if (!raw || raw.length > 180 || map[raw] || autoI18nCache.has(raw)) return;
+        autoI18nCache.add(raw);
+        texts.push(raw); targets.push({node, raw});
+      });
+    });
+    if (!texts.length) return;
+    try {
+      const response = await fetch('/api/translate-ui', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({language:LANG,texts})
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      const translations = data.translations || {};
+      targets.forEach(({node,raw}) => {
+        if (translations[raw]) node.nodeValue = node.nodeValue.replace(raw, translations[raw]);
+      });
+    } catch (_) { /* Built-in translations remain the offline fallback. */ }
+  }
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
+  const translateString=(raw)=>{ let out=raw; const keys=Object.keys(map).filter(k=>k.length>1).sort((a,b)=>b.length-a.length); for(const key of keys){ if(out.includes(key)) out=out.split(key).join(map[key]); } return out; };
+  nodes.forEach(n=>{const raw=n.nodeValue; const translated=translateString(raw); if(translated!==raw) n.nodeValue=translated;});
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const key=el.getAttribute('data-i18n'); if(!map[key]) return; const direct=[...el.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE && n.nodeValue.trim()); if(direct.length){ direct[direct.length-1].nodeValue=direct[direct.length-1].nodeValue.replace(direct[direct.length-1].nodeValue.trim(),map[key]); } else { el.textContent=map[key]; }});
+  document.querySelectorAll('[placeholder]').forEach(el=>{const key=el.getAttribute('data-i18n-placeholder')||el.getAttribute('placeholder'); if(map[key]) el.setAttribute('placeholder',map[key]);});
+  document.querySelectorAll('[title]').forEach(el=>{const key=el.getAttribute('data-i18n-title')||el.getAttribute('title'); if(map[key]) el.setAttribute('title',map[key]);});
+  document.querySelectorAll('[aria-label]').forEach(el=>{const key=el.getAttribute('data-i18n-label')||el.getAttribute('aria-label'); if(map[key]) el.setAttribute('aria-label',map[key]);});
+
+  // Keep translated UI labels translated when a module adds dynamic DOM content.
+  const translateDynamic = root => {
+    if (!root || !root.querySelectorAll) return;
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT); const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(n=>{const raw=n.nodeValue; const translated=translateString(raw); if(translated!==raw && raw.length<240) n.nodeValue=translated;});
+    root.querySelectorAll('[data-i18n]').forEach(el => {
+      const key=el.getAttribute('data-i18n'); if(map[key]) el.textContent=map[key];
+    });
+    root.querySelectorAll('[placeholder]').forEach(el => {
+      const key=el.getAttribute('data-i18n-placeholder')||el.getAttribute('placeholder'); if(map[key]) el.setAttribute('placeholder',map[key]);
+    });
+    root.querySelectorAll('[title]').forEach(el => {
+      const key=el.getAttribute('data-i18n-title')||el.getAttribute('title'); if(map[key]) el.setAttribute('title',map[key]);
+    });
+  };
+  // Run after the built-in dictionary so only missing module labels go to the fallback translator.
+  translateMissingUI(document);
+  new MutationObserver(mutations => mutations.forEach(m => m.addedNodes.forEach(n => {
+    if(n.nodeType===Node.ELEMENT_NODE) {
+      translateDynamic(n);
+      translateMissingUI(n);
+    }
+  }))).observe(document.body,{childList:true,subtree:true});
+
+  document.documentElement.dir=(LANG==='Arabic'||LANG==='Urdu')?'rtl':'ltr';
+  document.documentElement.lang=({English:'en',Hindi:'hi',Bengali:'bn',Marathi:'mr',Telugu:'te',Tamil:'ta',Kannada:'kn',Malayalam:'ml',Gujarati:'gu',Punjabi:'pa',Urdu:'ur',Odia:'or',Assamese:'as',Spanish:'es',French:'fr',German:'de',Dutch:'nl',Portuguese:'pt',Italian:'it',Chinese:'zh-CN',Japanese:'ja',Korean:'ko',Arabic:'ar',Russian:'ru'})[LANG]||'en';
+})();
+</script>
+</body>
+</html>

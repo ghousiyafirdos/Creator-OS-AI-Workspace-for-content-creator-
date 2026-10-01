@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}AI History & Favorites | {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+      <span class="gold-badge mb-1"><i class="bi bi-clock-history"></i> AI Logs & Favorites</span>
+      <h2 class="fw-bold mb-0">AI Generation History</h2>
+      <p class="text-muted small mb-0">Review, copy, or favorite past AI content outputs.</p>
+    </div>
+    
+    <a href="{{ url_for('ai.workspace') }}" class="btn btn-gold btn-sm">
+      <i class="bi bi-magic me-1"></i> Open AI Studio
+    </a>
+  </div>
+
+  <!-- Filter & Search Bar -->
+  <div class="card-glass mb-4 p-3 border-0">
+    <div class="row g-3 align-items-center">
+      <div class="col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-surface-elevated border-end-0 text-muted"><i class="bi bi-filter"></i></span>
+          <select class="form-select border-start-0" onchange="applyFilters(this.value, '{{ favorites_only }}')">
+            <option value="all" {% if tool_filter == 'all' %}selected{% endif %}>All AI Tools</option>
+            <option value="caption" {% if tool_filter == 'caption' %}selected{% endif %}>Captions</option>
+            <option value="script" {% if tool_filter == 'script' %}selected{% endif %}>Scripts</option>
+            <option value="hashtag" {% if tool_filter == 'hashtag' %}selected{% endif %}>Hashtags</option>
+            <option value="bio" {% if tool_filter == 'bio' %}selected{% endif %}>Bios</option>
+            <option value="rewrite" {% if tool_filter == 'rewrite' %}selected{% endif %}>Rewrites</option>
+            <option value="seo" {% if tool_filter == 'seo' %}selected{% endif %}>SEO Keywords</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="fav-switch" {% if favorites_only %}checked{% endif %} onchange="applyFilters('{{ tool_filter }}', this.checked)">
+          <label class="form-check-label small fw-bold" for="fav-switch">
+            <i class="bi bi-star-fill text-warning me-1"></i> Show Favorites Only
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Records List -->
+  {% if records %}
+  <div class="row g-3">
+    {% for rec in records %}
+    <div class="col-12">
+      <div class="card-glass p-3 border-0 shadow-sm">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-warning-subtle text-warning text-uppercase font-monospace">{{ rec.tool_type }}</span>
+            <span class="text-muted extra-small"><i class="bi bi-clock me-1"></i>{{ rec.created_at.strftime('%b %d, %Y - %H:%M') }}</span>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-link p-0 text-warning" onclick="toggleFavoriteHistory('{{ rec.id }}', this)" title="Favorite">
+              <i class="bi {% if rec.is_favorite %}bi-star-fill{% else %}bi-star{% endif %} fs-5"></i>
+            </button>
+
+            <button class="btn btn-outline-secondary btn-sm" onclick="copyHistoryText('{{ rec.id }}')">
+              <i class="bi bi-clipboard me-1"></i> Copy
+            </button>
+
+            <form action="{{ url_for('ai.delete_history', history_id=rec.id) }}" method="POST" class="d-inline creatoros-delete-form" data-confirm-title="Delete history" data-confirm-message="Delete this AI history record?" data-confirm-ok="Delete">
+              <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div class="text-muted small mb-2"><strong>Prompt:</strong> {{ rec.prompt }}</div>
+        
+        <div class="p-3 rounded bg-surface-elevated font-monospace extra-small text-main" id="rec-content-{{ rec.id }}" style="white-space: pre-wrap; max-height: 180px; overflow-y: auto;">{{ rec.response }}</div>
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5 card-glass border-0">
+    <i class="bi bi-journal-x display-3 text-muted mb-3 d-block"></i>
+    <h5 class="fw-bold">No AI History Records Found</h5>
+    <p class="text-muted small">No AI generations match your selected filter options.</p>
+    <a href="{{ url_for('ai.workspace') }}" class="btn btn-gold btn-sm mt-2">
+      <i class="bi bi-magic me-1"></i> Generate New AI Content
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function applyFilters(tool, fav) {
+    window.location.href = `/ai/history?tool=${tool}&favorites=${fav}`;
+  }
+
+  function copyHistoryText(id) {
+    const text = document.getElementById(`rec-content-${id}`).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Copied output to clipboard!', 'success');
+    });
+  }
+
+  function toggleFavoriteHistory(id, btn) {
+    fetch(`/ai/favorite/${id}`, { method: 'POST' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const icon = btn.querySelector('i');
+          if (data.is_favorite) {
+            icon.className = 'bi bi-star-fill fs-5';
+            showToast('Added to Favorites!', 'success');
+          } else {
+            icon.className = 'bi bi-star fs-5';
+            showToast('Removed from Favorites.', 'info');
+          }
+        }
+      });
+  }
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.creatoros-delete-form').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const approved = await creatorOSConfirm(form.dataset.confirmMessage, {
+        title: form.dataset.confirmTitle, okText: form.dataset.confirmOk
+      });
+      if (approved) form.submit();
+    });
+  });
+});
+</script>
+{% endblock %}

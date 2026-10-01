@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Launchpad | {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+      <span class="gold-badge mb-1"><i class="bi bi-shield-lock-fill"></i> Admin Control Panel</span>
+      <h2 class="fw-bold mb-0">System Admin Launchpad</h2>
+      <p class="text-muted small mb-0">Manage registered users, review feedback reports & monitor platform storage metrics.</p>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-warning-subtle text-warning p-2 px-3 border border-warning-subtle font-monospace">
+        <i class="bi bi-shield-check me-1"></i> Admin Access Granted
+      </span>
+    </div>
+  </div>
+
+  <!-- Admin Platform Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+      <div class="card-glass border-0 p-3 h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-muted small fw-semibold">Total Users</span>
+          <span class="p-2 rounded bg-primary-subtle text-primary"><i class="bi bi-people-fill"></i></span>
+        </div>
+        <h3 class="fw-bold mb-1">{{ total_users }}</h3>
+        <span class="text-muted extra-small">Registered Creator accounts</span>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card-glass border-0 p-3 h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-muted small fw-semibold">AI Generations</span>
+          <span class="p-2 rounded bg-warning-subtle text-warning"><i class="bi bi-magic"></i></span>
+        </div>
+        <h3 class="fw-bold mb-1">{{ total_ai_generations }}</h3>
+        <span class="text-muted extra-small">Total content items generated</span>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card-glass border-0 p-3 h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-muted small fw-semibold">Active Draft Files</span>
+          <span class="p-2 rounded bg-info-subtle text-info"><i class="bi bi-folder2-open"></i></span>
+        </div>
+        <h3 class="fw-bold mb-1">{{ total_drafts }}</h3>
+        <span class="text-muted extra-small">Stored media & text drafts</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- User Management Table -->
+  <div class="card-glass border-0 p-4 mb-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-people-fill text-warning me-2"></i>Registered Platform Users</h5>
+    
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 text-main">
+        <thead class="bg-surface-elevated text-muted extra-small text-uppercase font-monospace">
+          <tr>
+            <th class="ps-3">User</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Joined Date</th>
+            <th class="text-end pe-3">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td class="ps-3">
+              <div class="d-flex align-items-center gap-2">
+                <div class="profile-avatar" style="width: 32px; height: 32px; font-size: 0.85rem;">{{ u.full_name[0] | upper }}</div>
+                <strong class="fw-bold text-main">{{ u.full_name }}</strong>
+              </div>
+            </td>
+            <td><span class="font-monospace small text-muted">{{ u.email }}</span></td>
+            <td>
+              <span class="badge {% if u.role == 'admin' %}bg-warning text-dark{% else %}bg-secondary text-white{% endif %} text-uppercase font-monospace">
+                {{ u.role }}
+              </span>
+            </td>
+            <td>
+              <span class="badge bg-success-subtle text-success">
+                <i class="bi bi-check-circle-fill me-1"></i> Verified
+              </span>
+            </td>
+            <td><span class="text-muted small">{{ u.created_at.strftime('%b %d, %Y') }}</span></td>
+            <td class="text-end pe-3">
+              <form action="{{ url_for('admin.toggle_role', user_id=u.id) }}" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-outline-warning btn-sm" title="Toggle Admin/Creator Role">
+                  <i class="bi bi-shield-arrow-up"></i> Toggle Role
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Feedback Reports Audit Table -->
+  <div class="card-glass border-0 p-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-star-fill text-warning me-2"></i>User Feedback Reports Audit</h5>
+    
+    {% if feedback_reports %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 text-main">
+        <thead class="bg-surface-elevated text-muted extra-small text-uppercase font-monospace">
+          <tr>
+            <th class="ps-3">User Email</th>
+            <th>Rating</th>
+            <th>Category</th>
+            <th>Comments</th>
+            <th class="text-end pe-3">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fb in feedback_reports %}
+          <tr>
+            <td class="ps-3"><span class="font-monospace small text-muted">{{ fb.user.email if fb.user else 'Anonymous' }}</span></td>
+            <td><span class="text-warning fw-bold">{'⭐' * fb.rating}</span></td>
+            <td><span class="badge bg-warning-subtle text-warning">{{ fb.category }}</span></td>
+            <td><span class="small text-muted">{{ fb.comments }}</span></td>
+            <td class="text-end pe-3"><span class="extra-small text-muted">{{ fb.created_at.strftime('%b %d, %H:%M') }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-4 text-muted small">No feedback reports submitted yet.</div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

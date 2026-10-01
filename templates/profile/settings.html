@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Persona | {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  
+  <!-- Header Title -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+      <h2 class="fw-bold mb-0">Profile & Platform Settings</h2>
+      <p class="text-muted small mb-0">Manage your profile picture, display name, preferred language and account settings.</p>
+    </div>
+    
+    {% if current_user.role == 'admin' %}
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-warning text-dark font-weight-bold btn-sm">
+      <i class="bi bi-shield-lock-fill me-1"></i> Admin Control Panel
+    </a>
+    {% endif %}
+  </div>
+
+  <div class="row g-4">
+    
+    <!-- Left Column: Profile Card & Avatar Upload -->
+    <div class="col-lg-4">
+      <div class="card-glass border-0 p-4 text-center h-100">
+        <div class="position-relative d-inline-block mb-3">
+          <button type="button" id="profileAvatarPicker" class="profile-avatar-picker-btn" title="Choose profile image from your file manager" aria-label="Choose profile image">
+            {% if current_user.profile_pic and current_user.profile_pic != 'default_avatar.png' %}
+            <img id="profileAvatarPreview" src="{{ url_for('static', filename=current_user.profile_pic) }}" alt="Profile photo" class="rounded-circle shadow-lg object-fit-cover">
+            {% else %}
+            <span id="profileAvatarPreview" class="rounded-circle bg-warning text-dark font-weight-bold fs-1 d-inline-flex align-items-center justify-content-center shadow-lg">
+              {{ current_user.full_name[0] | upper }}
+            </span>
+            {% endif %}
+            <span class="profile-avatar-upload-hint"><i class="bi bi-camera-fill"></i></span>
+          </button>
+        </div>
+
+        <div class="small text-muted mb-3">Click your profile image to choose a new image from your file manager.</div>
+        <h4 class="fw-bold mb-1">{{ current_user.full_name }}</h4>
+        
+        
+        <div class="d-flex justify-content-center gap-2 mb-3">
+          <span class="badge bg-warning-subtle text-warning font-monospace text-uppercase">{{ current_user.role }} Account</span>
+        </div>
+
+        <div class="p-3 rounded bg-surface-elevated text-start extra-small text-muted mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span>Joined CreatorOS:</span>
+            <strong class="text-main">{{ current_user.created_at.strftime('%B %Y') }}</strong>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>Preferred Language:</span>
+            <strong class="text-warning">{{ current_user.language or 'English' }}</strong>
+          </div>
+        </div>
+
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm w-100">
+          <i class="bi bi-power me-1"></i> Sign Out of Workspace
+        </a>
+      </div>
+    </div>
+
+    <!-- Right Column: Edit Profile & Preferences Form -->
+    <div class="col-lg-8">
+      <div class="card-glass border-0 p-4">
+        <h5 class="fw-bold mb-4 pb-2 border-bottom">
+          <i class="bi bi-sliders text-warning me-2"></i>Account Preferences & Profile Details
+        </h5>
+
+        <form id="profilePhotoUploadForm" action="{{ url_for('profile.upload_photo') }}" method="POST" enctype="multipart/form-data" class="d-none">
+          <input id="profilePhotoInput" type="file" name="profile_pic" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp">
+        </form>
+        <form id="profileSettingsForm" action="{{ url_for('profile.settings') }}" method="POST" enctype="multipart/form-data">
+          
+          <!-- Edit Name & Profile Picture -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Full Display Name</label>
+              <input type="text" name="full_name" class="form-control" value="{{ current_user.full_name }}" required>
+            </div>
+            
+            <div class="col-md-6 d-flex align-items-end">
+              <div class="small text-muted">Use the Profile option in the sidebar to choose or replace your profile image.</div>
+            </div>
+          </div>
+
+          <!-- Personal Information -->
+          <div class="mb-4">
+            <h6 class="fw-bold mb-3 text-muted small text-uppercase font-monospace border-bottom pb-2">Personal Information</h6>
+            <div class="row g-3">
+              <div class="col-md-4"><label class="form-label small fw-bold">Date of Birth</label><input type="date" name="date_of_birth" class="form-control" value="{{ current_user.date_of_birth.strftime('%Y-%m-%d') if current_user.date_of_birth else '' }}"></div>
+              <div class="col-md-4"><label class="form-label small fw-bold">Phone Number</label><input type="tel" name="phone" class="form-control" value="{{ current_user.phone or '' }}" placeholder="Optional"></div>
+              <div class="col-md-4"><label class="form-label small fw-bold">Gender</label><select name="gender" class="form-select"><option value="">Prefer not to say</option><option {% if current_user.gender=='Female' %}selected{% endif %}>Female</option><option {% if current_user.gender=='Male' %}selected{% endif %}>Male</option><option {% if current_user.gender=='Other' %}selected{% endif %}>Other</option></select></div>
+              <div class="col-md-6"><label class="form-label small fw-bold">Location</label><input type="text" name="location" class="form-control" value="{{ current_user.location or '' }}" placeholder="City, Country"></div>
+              <div class="col-12"><label class="form-label small fw-bold">About Me</label><textarea name="bio" class="form-control" rows="3" maxlength="500" placeholder="Tell us a little about yourself...">{{ current_user.bio or '' }}</textarea></div>
+            </div>
+          </div>
+
+          <!-- Social Profiles -->
+          <div class="mb-4">
+            <h6 class="fw-bold mb-3 text-muted small text-uppercase font-monospace border-bottom pb-2">Social Profiles</h6>
+            <div class="row g-3">
+              <div class="col-md-4"><label class="form-label small fw-bold">Instagram</label><input type="text" name="instagram" class="form-control" value="{{ current_user.instagram or '' }}" placeholder="@username"></div>
+              <div class="col-md-4"><label class="form-label small fw-bold">YouTube</label><input type="text" name="youtube" class="form-control" value="{{ current_user.youtube or '' }}" placeholder="Channel name"></div>
+              <div class="col-md-4"><label class="form-label small fw-bold">Email</label><input type="email" name="email" class="form-control" value="{{ current_user.email or '' }}" placeholder="you@example.com"></div>
+            </div>
+          </div>
+
+          <!-- Language Selection -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Language Selection</label>
+              <select name="language" class="form-select" onchange="this.form.submit()" title="Choose interface language">
+                <option value="English" {% if current_user.language == 'English' %}selected{% endif %}>English</option>
+                <option value="Hindi" {% if current_user.language == 'Hindi' %}selected{% endif %}>हिन्दी</option>
+                <option value="Bengali" {% if current_user.language == 'Bengali' %}selected{% endif %}>বাংলা</option>
+                <option value="Marathi" {% if current_user.language == 'Marathi' %}selected{% endif %}>मराठी</option>
+                <option value="Telugu" {% if current_user.language == 'Telugu' %}selected{% endif %}>తెలుగు</option>
+                <option value="Tamil" {% if current_user.language == 'Tamil' %}selected{% endif %}>தமிழ்</option>
+                <option value="Kannada" {% if current_user.language == 'Kannada' %}selected{% endif %}>ಕನ್ನಡ</option>
+                <option value="Malayalam" {% if current_user.language == 'Malayalam' %}selected{% endif %}>മലയാളം</option>
+                <option value="Gujarati" {% if current_user.language == 'Gujarati' %}selected{% endif %}>ગુજરાતી</option>
+                <option value="Punjabi" {% if current_user.language == 'Punjabi' %}selected{% endif %}>ਪੰਜਾਬੀ</option>
+                <option value="Urdu" {% if current_user.language == 'Urdu' %}selected{% endif %}>اردو</option>
+                <option value="Odia" {% if current_user.language == 'Odia' %}selected{% endif %}>ଓଡ଼ିଆ</option>
+                <option value="Assamese" {% if current_user.language == 'Assamese' %}selected{% endif %}>অসমীয়া</option>
+                <option value="Spanish" {% if current_user.language == 'Spanish' %}selected{% endif %}>Español</option>
+                <option value="French" {% if current_user.language == 'French' %}selected{% endif %}>Français</option>
+                <option value="German" {% if current_user.language == 'German' %}selected{% endif %}>Deutsch</option>
+                <option value="Dutch" {% if current_user.language == 'Dutch' %}selected{% endif %}>Nederlands</option>
+                <option value="Portuguese" {% if current_user.language == 'Portuguese' %}selected{% endif %}>Português</option>
+                <option value="Italian" {% if current_user.language == 'Italian' %}selected{% endif %}>Italiano</option>
+                <option value="Chinese" {% if current_user.language == 'Chinese' %}selected{% endif %}>中文</option>
+                <option value="Japanese" {% if current_user.language == 'Japanese' %}selected{% endif %}>日本語</option>
+                <option value="Korean" {% if current_user.language == 'Korean' %}selected{% endif %}>한국어</option>
+                <option value="Arabic" {% if current_user.language == 'Arabic' %}selected{% endif %}>العربية</option>
+                <option value="Russian" {% if current_user.language == 'Russian' %}selected{% endif %}>Русский</option>
+              </select>
+            </div>
+          </div>
+</div>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-end gap-2 border-top pt-3">
+            <button type="submit" class="btn btn-gold px-4">
+              <i class="bi bi-check-circle-fill me-1"></i> Save Changes
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const picker = document.getElementById('profileAvatarPicker');
+  const input = document.getElementById('profilePhotoInput');
+
+  if (!picker || !input) return;
+
+  picker.addEventListener('click', function () {
+    // Opens the operating system file manager.
+    input.click();
+  });
+
+  input.addEventListener('change', async function () {
+    if (!this.files || !this.files.length) return;
+
+    const file = this.files[0];
+    if (!file.type.startsWith('image/')) {
+      showToast('Please choose an image file.', 'warning');
+      this.value = '';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('profile_pic', file);
+
+    picker.disabled = true;
+
+    try {
+      const response = await fetch('{{ url_for("profile.upload_photo") }}', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Profile image upload failed.');
+      }
+
+      const preview = document.getElementById('profileAvatarPreview');
+      if (preview) {
+        if (preview.tagName.toLowerCase() === 'img') {
+          preview.src = data.url + '?v=' + Date.now();
+        } else {
+          const img = document.createElement('img');
+          img.id = 'profileAvatarPreview';
+          img.src = data.url + '?v=' + Date.now();
+          img.alt = 'Profile photo';
+          img.className = 'rounded-circle shadow-lg object-fit-cover';
+          preview.replaceWith(img);
+        }
+      }
+
+      // Keep the sidebar/profile image in sync without changing modules.
+      document.querySelectorAll('.profile-avatar img').forEach(function (img) {
+        img.src = data.url + '?v=' + Date.now();
+      });
+
+      showToast('Profile image updated successfully.', 'success');
+    } catch (error) {
+      showToast(error.message || 'Profile image upload failed.', 'danger');
+    } finally {
+      picker.disabled = false;
+      this.value = '';
+    }
+  });
+});
+</script>
+{% endblock %}

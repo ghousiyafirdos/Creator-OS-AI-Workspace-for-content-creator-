@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Recycle Bin | {{ app_title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+  
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+      <span class="gold-badge mb-1"><i class="bi bi-trash3"></i> 30-Day Auto Purge</span>
+      <h2 class="fw-bold mb-0">Recycle Bin</h2>
+      <p class="text-muted small mb-0">Deleted drafts are stored here for 30 days before permanent deletion.</p>
+    </div>
+    
+    <a href="{{ url_for('drafts.manager') }}" class="btn btn-gold btn-sm">
+      <i class="bi bi-folder2-open me-1"></i> Return to Craft Nest
+    </a>
+  </div>
+
+  {% if drafts %}
+  <div class="card-glass border-0 p-0 overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 text-main">
+        <thead class="bg-surface-elevated text-muted extra-small text-uppercase font-monospace">
+          <tr>
+            <th class="ps-4">Title & Type</th>
+            <th>File Size</th>
+            <th>Deleted Date</th>
+            <th>Retention Status</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for draft in drafts %}
+          <tr>
+            <td class="ps-4">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-secondary-subtle text-secondary text-uppercase font-monospace">{{ draft.file_type }}</span>
+                <strong class="fw-bold text-main">{{ draft.title }}</strong>
+              </div>
+            </td>
+
+            <td>
+              <span class="font-monospace text-muted small">{{ draft.file_size_mb }} MB</span>
+            </td>
+
+            <td>
+              <span class="text-muted small"><i class="bi bi-clock me-1"></i>{{ draft.deleted_at.strftime('%b %d, %Y') if draft.deleted_at else 'N/A' }}</span>
+            </td>
+
+            <td>
+              <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill font-monospace">
+                <i class="bi bi-hourglass-split me-1"></i> {{ draft.days_remaining_in_bin() }} Days Left
+              </span>
+            </td>
+
+            <td class="text-end pe-4">
+              <div class="d-flex align-items-center justify-content-end gap-2">
+                <form action="{{ url_for('drafts.restore_draft', draft_id=draft.id) }}" method="POST" class="d-inline">
+                  <button type="submit" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
+                  </button>
+                </form>
+
+                <form action="{{ url_for('drafts.purge_draft', draft_id=draft.id) }}" method="POST" class="d-inline creatoros-delete-form" data-confirm-title="Permanently delete" data-confirm-message="Permanently delete this file? This cannot be undone." data-confirm-ok="Delete permanently">
+                  <button type="submit" class="btn btn-outline-danger btn-sm" title="Permanent Purge">
+                    <i class="bi bi-trash-fill"></i> Purge
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="text-center py-5 card-glass border-0">
+    <i class="bi bi-trash3 display-3 text-muted mb-3 d-block"></i>
+    <h5 class="fw-bold">Recycle Bin is Empty</h5>
+    <p class="text-muted small">No soft-deleted files currently exist in your Recycle Bin.</p>
+    <a href="{{ url_for('drafts.manager') }}" class="btn btn-gold btn-sm mt-2">
+      <i class="bi bi-folder2-open me-1"></i> Back to Craft Nest
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.creatoros-delete-form').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const approved = await creatorOSConfirm(form.dataset.confirmMessage, {
+        title: form.dataset.confirmTitle, okText: form.dataset.confirmOk
+      });
+      if (approved) form.submit();
+    });
+  });
+});
+</script>
+{% endblock %}

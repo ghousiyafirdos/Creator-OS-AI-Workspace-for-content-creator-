@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Craft Nest | {{ app_title }}{% endblock %}
+
+{% block content %}
+<style>
+.container-fluid.p-0{padding-top:12px!important}.draft-card{padding:1.15rem!important;position:relative;overflow:visible!important;z-index:1}.draft-card:hover{z-index:30}.draft-preview{position:relative;overflow:visible!important}.draft-preview img,.draft-preview video{transition:transform .22s ease,box-shadow .22s ease;transform-origin:center;position:relative;border-radius:10px}.draft-preview:hover img,.draft-preview:hover video{transform:scale(1.75);z-index:50;box-shadow:0 18px 45px rgba(25,35,65,.28);border-radius:10px}.draft-preview:after{content:'Hover to preview';position:absolute;right:7px;bottom:7px;padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.9);color:#667085;font-size:7px;font-weight:800;pointer-events:none;opacity:.85}.draft-preview:hover:after{opacity:0}
+</style>
+<div class="container-fluid p-0">
+  
+  <!-- Header Title & Action Buttons -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+      <h2 class="fw-bold mb-0">Craft Nest</h2>
+      <p class="text-muted small mb-0">Keep your ideas, drafts, images, videos and documents together in one creative workspace.</p>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+      <button type="button" class="btn btn-gold btn-sm" id="quickDraftUploadBtn">
+        <i class="bi bi-cloud-upload-fill me-1"></i> Upload File
+      </button>
+      <form id="quickDraftUploadForm" action="{{ url_for('drafts.upload_file') }}" method="POST" enctype="multipart/form-data" class="d-none">
+        <input id="quickDraftFile" type="file" name="file" accept=".png,.jpg,.jpeg,.gif,.webp,.mp4,.mov,.avi,.mkv,.pdf,.doc,.docx,.txt,.csv,.xlsx">
+        <input id="quickDraftTitle" type="hidden" name="title" value="">
+      </form>
+      <a href="{{ url_for('drafts.recycle_bin') }}" class="btn btn-outline-secondary btn-sm" title="Recycle Bin">
+        <i class="bi bi-trash3 me-1"></i> Recycle Bin
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <!-- Search & Type Filter Control -->
+    <div class="col-12">
+      <div class="card-glass border-0 p-3 d-flex align-items-center">
+        <form method="GET" action="{{ url_for('drafts.manager') }}" class="w-100 row g-2 align-items-center">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text bg-surface-elevated border-end-0 text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" name="search" class="form-control border-start-0" placeholder="Search draft titles or content..." value="{{ search_query }}">
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <select name="type" class="form-select" onchange="this.form.submit()">
+              <option value="all" {% if file_filter == 'all' %}selected{% endif %}>All File Types</option>
+              <option value="text" {% if file_filter == 'text' %}selected{% endif %}>Text Drafts</option>
+              <option value="image" {% if file_filter == 'image' %}selected{% endif %}>Images</option>
+              <option value="video" {% if file_filter == 'video' %}selected{% endif %}>Videos</option>
+              <option value="document" {% if file_filter == 'document' %}selected{% endif %}>Documents</option>
+            </select>
+          </div>
+
+          <div class="col-md-3 d-flex align-items-center justify-content-between">
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" name="favorites" value="true" id="favCheck" {% if favorites_only %}checked{% endif %} onchange="this.form.submit()">
+              <label class="form-check-label extra-small fw-bold" for="favCheck"><i class="bi bi-star-fill text-warning"></i> Favorites</label>
+            </div>
+            <button type="submit" class="btn btn-gold btn-sm"><i class="bi bi-funnel"></i></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Draft Cards Grid -->
+  {% if drafts %}
+  <div class="row g-3">
+    {% for draft in drafts %}
+    <div class="col-md-6 col-lg-4 col-xl-3">
+      <div class="card-glass h-100 p-3 border-0 shadow-sm d-flex flex-column justify-content-between draft-card">
+        
+        <div>
+          <!-- Type Badge & Favorite Star -->
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="badge 
+              {% if draft.file_type == 'image' %}bg-primary-subtle text-primary border border-primary-subtle
+              {% elif draft.file_type == 'video' %}bg-danger-subtle text-danger border border-danger-subtle
+              {% elif draft.file_type == 'document' %}bg-info-subtle text-info border border-info-subtle
+              {% else %}bg-warning-subtle text-warning border border-warning-subtle{% endif %} text-uppercase font-monospace">
+              <i class="bi 
+                {% if draft.file_type == 'image' %}bi-file-image
+                {% elif draft.file_type == 'video' %}bi-file-play
+                {% elif draft.file_type == 'document' %}bi-file-earmark-text
+                {% else %}bi-file-text{% endif %} me-1"></i> {{ draft.file_type }}
+            </span>
+
+            <button class="btn btn-sm btn-link p-0 text-warning" onclick="toggleDraftFavorite('{{ draft.id }}', this)" title="Favorite">
+              <i class="bi {% if draft.is_favorite %}bi-star-fill{% else %}bi-star{% endif %} fs-5"></i>
+            </button>
+          </div>
+
+          <!-- Preview Thumbnail for Images -->
+          {% if draft.file_type == 'image' and draft.file_path %}
+          <div class="mb-2 rounded draft-preview" style="height: 120px; background-color: var(--bg-surface-elevated);">
+            <img src="{{ url_for('static', filename=draft.file_path) }}" alt="{{ draft.title }}" class="w-100 h-100 object-fit-cover">
+          </div>
+          {% elif draft.file_type == 'video' and draft.file_path %}
+          <div class="mb-2 rounded draft-preview" style="height: 120px; background-color: var(--bg-surface-elevated);">
+            <video src="{{ url_for('static', filename=draft.file_path) }}" muted playsinline preload="metadata" class="w-100 h-100 object-fit-cover"></video>
+          </div>
+          {% endif %}
+
+          <h6 class="fw-bold mb-1 text-truncate" title="{{ draft.title }}">{{ draft.title }}</h6>
+          
+          {% if draft.content %}
+          <p class="text-muted extra-small mb-2" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+            {{ draft.content }}
+          </p>
+          {% endif %}
+        </div>
+
+        <div class="pt-2 border-top">
+          <div class="d-flex align-items-center justify-content-start text-muted extra-small mb-2">
+            <span><i class="bi bi-clock me-1"></i>{{ draft.updated_at.strftime('%b %d, %H:%M') }}</span>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between gap-1">
+            {% if draft.file_path %}
+            <a href="{{ url_for('static', filename=draft.file_path) }}" target="_blank" class="btn btn-outline-secondary btn-sm flex-grow-1" title="View/Download File">
+              <i class="bi bi-download me-1"></i> Open
+            </a>
+            {% endif %}
+
+            <form action="{{ url_for('drafts.soft_delete', draft_id=draft.id) }}" method="POST" class="d-inline creatoros-delete-form" data-confirm-title="Move to Recycle Bin" data-confirm-message="Move this draft to the Recycle Bin?" data-confirm-ok="Move to Bin">
+              <button type="submit" class="btn btn-outline-danger btn-sm" title="Move to Bin">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5 card-glass border-0">
+    <i class="bi bi-folder-x display-3 text-muted mb-3 d-block"></i>
+    <h5 class="fw-bold">No Draft Files Found</h5>
+    <p class="text-muted small">No drafts match your current search and filter parameters.</p>
+    <button type="button" class="btn btn-gold btn-sm mt-2" id="quickDraftUploadBtnEmpty">
+      <i class="bi bi-cloud-upload me-1"></i> Upload Your First File
+    </button>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Modal 1: Upload File Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content card-glass border-0 shadow-lg">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title fw-bold"><i class="bi bi-cloud-upload-fill text-warning me-2"></i>Upload File</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="{{ url_for('drafts.upload_file') }}" method="POST" enctype="multipart/form-data">
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Draft Title</label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. CreatorOS Launch Banner">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Select File (Image, Video, Doc)</label>
+            <input type="file" name="file" class="form-control" required>
+            <div class="form-text extra-small text-muted">Supports PNG, JPG, MP4, MOV, PDF, DOCX.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Notes / Description (Optional)</label>
+            <textarea name="content" class="form-control" rows="3" placeholder="Add details or caption notes..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-gold px-4"><i class="bi bi-upload me-1"></i> Upload File</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let autoSaveTimer = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.creatoros-delete-form').forEach((form) => {
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const approved = await creatorOSConfirm(
+          form.dataset.confirmMessage || 'Are you sure you want to continue?',
+          { title: form.dataset.confirmTitle || 'Confirm action', okText: form.dataset.confirmOk || 'Delete' }
+        );
+        if (approved) form.submit();
+      });
+    });
+    const quickBtn = document.getElementById('quickDraftUploadBtn');
+    const quickBtnEmpty = document.getElementById('quickDraftUploadBtnEmpty');
+    const quickFile = document.getElementById('quickDraftFile');
+    const quickForm = document.getElementById('quickDraftUploadForm');
+    const quickTitle = document.getElementById('quickDraftTitle');
+
+    const openQuickDraftUpload = () => quickFile?.click();
+    quickBtn?.addEventListener('click', openQuickDraftUpload);
+    quickBtnEmpty?.addEventListener('click', openQuickDraftUpload);
+    quickFile?.addEventListener('change', async function() {
+      if (!this.files?.length) return;
+      const file=this.files[0];
+      quickTitle.value=file.name;
+      const data=new FormData(quickForm);
+      try {
+        const response=await fetch(quickForm.action,{method:'POST',body:data,headers:{'X-Requested-With':'XMLHttpRequest'}});
+        if(!response.ok) throw new Error('Upload failed.');
+        window.location.reload();
+      } catch(err) {
+        showToast(err.message || 'Upload failed. Please try again.', 'danger');
+      } finally { this.value=''; }
+    });
+
+    // Explicit modal fallbacks
+    const modalTriggers = document.querySelectorAll('[data-bs-toggle="modal"]');
+    modalTriggers.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const targetSelector = btn.getAttribute('data-bs-target');
+        if (targetSelector) {
+          const modalEl = document.querySelector(targetSelector);
+          if (modalEl && typeof bootstrap !== 'undefined') {
+            const modalObj = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modalObj.show();
+          }
+        }
+      });
+    });
+  });
+
+  function toggleDraftFavorite(id, btn) {
+    fetch(`/drafts/favorite/${id}`, { method: 'POST' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const icon = btn.querySelector('i');
+          if (data.is_favorite) {
+            icon.className = 'bi bi-star-fill fs-5';
+            showToast('Draft added to Favorites!', 'success');
+          } else {
+            icon.className = 'bi bi-star fs-5';
+            showToast('Draft removed from Favorites.', 'info');
+          }
+        }
+      });
+  }
+</script>
+{% endblock %}

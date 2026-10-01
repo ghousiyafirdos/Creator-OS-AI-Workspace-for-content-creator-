@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Growth Lens | {{ app_title }}{% endblock %}
+{% block content %}
+<div class="insights-page">
+  <section class="insights-top-grid">
+    <article class="insight-hero panel-card">
+      <div class="hero-art"><img src="{{ url_for('static', filename='assets/creatoros-dashboard-hero.jpg') }}" alt="Creator working at a desk"></div>
+      <div class="hero-score">
+        <div class="score-title">Your Productivity Score <span title="Based on activity recorded in CreatorOS">ⓘ</span></div>
+        <div class="score-orb"><div><strong id="productivityScore">{{ productivity_score }}</strong><small>/100</small></div></div>
+        <div class="score-change" id="scoreMovement">{{ productivity_score }} / 100 activity points</div>
+        <p>Keep creating, keep progressing.</p>
+        <span class="tiny-heart">♥</span>
+      </div>
+    </article>
+    <article class="creator-insights panel-card">
+      <h2><span>✦</span> Creator Insights</h2>
+      <div class="insight-row"><i class="bi bi-file-earmark-text"></i><div><b>You have created {{ analytics.ai_generations_count }} AI drafts</b><small>Every idea starts somewhere. Keep building your library.</small></div></div>
+      <div class="insight-row"><i class="bi bi-stars"></i><div><b>Your most-used tool is {{ analytics.most_used_tool }}</b><small>Explore other tools to expand your workflow.</small></div></div>
+      <div class="insight-row"><i class="bi bi-images"></i><div><b>{{ analytics.posts_published }} published posts</b><small>Your published work is part of your creative journey.</small></div></div>
+      <div class="insight-row"><i class="bi bi-calendar-heart"></i><div><b>{{ scheduled_count }} upcoming plans</b><small>Check your calendar and stay on track.</small></div></div>
+    </article>
+  </section>
+
+  <section class="insights-middle-grid">
+    <article class="panel-card journey-card">
+      <div class="section-head"><h2>♧ &nbsp;Your Creative Journey</h2><span class="period-pill">Activity this week⌄</span></div>
+      <div class="journey-chart" id="journeyChart" data-values='{{ weekly_activity|tojson }}' data-labels='{{ weekly_labels|tojson }}'></div>
+    </article>
+    <article class="panel-card module-card">
+      <div class="section-head"><h2>♧ &nbsp;Module Activity</h2></div>
+      {% for item in module_activity %}<div class="module-row"><span class="module-icon {{ item.color }}"><i class="bi {{ item.icon }}"></i></span><span class="module-name">{{ item.name }}</span><span class="module-track"><i style="width:{{ item.percent }}%"></i></span><b>{{ item.count }}</b></div>{% endfor %}
+    </article>
+    <article class="panel-card recent-card">
+      <div class="section-head"><h2>◷ &nbsp;Recent Activity</h2><a href="{{ url_for('ai.history') }}">View All</a></div>
+      {% for item in recent_activity %}<a class="recent-row" href="{{ item.url }}"><span class="recent-icon {{ item.color }}"><i class="bi {{ item.icon }}"></i></span><span><b>{{ item.title }}</b><small>{{ item.when }}</small></span><i class="bi bi-chevron-right"></i></a>{% else %}<div class="no-activity">Your recent work will appear here as you use CreatorOS.</div>{% endfor %}
+    </article>
+  </section>
+
+  <section class="insights-bottom-grid">
+    <article class="quote-card panel-card"><span class="quote-mark">“</span><div><p>Progress isn’t about being perfect,<br> it’s about showing up, again and again.</p><small>— CreatorOS</small></div><span class="quote-doodle">♡</span></article>
+    <article class="panel-card quick-card"><h2>ϟ &nbsp;Quick Access</h2><div class="quick-links">
+      <a href="{{ url_for('ai.workspace') }}"><i class="bi bi-stars violet"></i><span>Idea Flow</span></a>
+      <a href="{{ url_for('pick_perfect') }}"><i class="bi bi-image pink"></i><span>Pick Perfect</span></a>
+      <a href="{{ url_for('video_editor.editor') }}"><i class="bi bi-play-fill orange"></i><span>Clip Nest</span></a>
+      <a href="{{ url_for('drafts.manager') }}"><i class="bi bi-file-earmark-text teal"></i><span>Craft Nest</span></a>
+      <a href="{{ url_for('planner.calendar') }}"><i class="bi bi-calendar3 blue"></i><span>Day Canvas</span></a>
+    </div></article>
+  </section>
+</div>
+<style>
+.insights-page{--navy:#071735;--panel:#091b3c;--edge:#20365d;--muted:#aab8d2;color:#f4f6ff;padding:0 2px 22px;display:grid;gap:18px}.insights-page .panel-card{background:var(--panel);border:1px solid var(--edge);border-radius:20px;box-shadow:0 12px 30px rgba(0,0,0,.12);min-width:0}.insights-top-grid{display:grid;grid-template-columns:1.8fr 1fr;gap:18px}.insight-hero{display:grid;grid-template-columns:1.35fr .9fr;overflow:hidden;min-height:360px;background:#081a3a!important}.hero-art{min-height:100%;overflow:hidden;position:relative}.hero-art img{width:100%;height:100%;min-height:360px;object-fit:cover;display:block}.hero-score{display:flex;align-items:center;flex-direction:column;justify-content:center;padding:20px 16px;text-align:center;position:relative}.score-title{font-size:19px;font-weight:700;white-space:nowrap}.score-title span{font-size:14px;color:#a9b7d4}.score-orb{width:185px;height:185px;border-radius:50%;display:grid;place-items:center;margin:24px 0 15px;background:radial-gradient(circle,#14264a 55%,#6e4c26 57%,#f5c46d 63%,#a66c30 68%,transparent 70%);box-shadow:0 0 25px #d99d4c66,inset 0 0 18px #ffdb8a55}.score-orb>div{width:135px;height:135px;border-radius:50%;background:#101f3d;display:grid;place-content:center;border:1px solid #f6c76c;text-align:center}.score-orb strong{font-size:48px;line-height:1;color:#fff0bd}.score-orb small{font-size:18px}.score-change{background:#133f57;border:1px solid #287c85;border-radius:18px;padding:7px 14px;font-size:12px}.hero-score p{font-size:13px;margin:14px 0 0;color:#d5deef}.tiny-heart{color:#e7a9c7;font-size:20px;margin-top:6px}.creator-insights{padding:22px 24px}.creator-insights h2,.quick-card h2{font-size:20px;margin:0 0 20px;font-weight:650}.creator-insights h2 span{color:#ffd16c;font-size:25px;margin-right:8px}.insight-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid #1b3154}.insight-row:last-child{border:0}.insight-row>i{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;background:#147f8d;color:#e7faff;font-size:21px;flex:none}.insight-row:nth-of-type(2)>i{background:#7352ba}.insight-row:nth-of-type(3)>i{background:#147f8d}.insight-row:nth-of-type(4)>i{background:#a34fba}.insight-row b{font-size:13px;font-weight:600;display:block}.insight-row small{font-size:11px;color:var(--muted);display:block;margin-top:5px}.insights-middle-grid{display:grid;grid-template-columns:1.55fr 1fr .9fr;gap:18px}.journey-card,.module-card,.recent-card{padding:20px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}.section-head h2{font-size:17px;font-weight:600;margin:0}.period-pill{font-size:11px;padding:7px 11px;border-radius:18px;background:#172b50;border:1px solid #29416a;color:#dce5f8}.journey-chart{height:235px;position:relative;padding:15px 8px 28px}.journey-chart svg{width:100%;height:100%;overflow:visible}.module-row{display:grid;grid-template-columns:36px minmax(70px,1fr) minmax(55px,1.2fr) 22px;align-items:center;gap:10px;margin:13px 0}.module-icon,.recent-icon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:17px;background:#263e75}.module-icon.pink,.recent-icon.pink{background:#814a9b}.module-icon.orange{background:#a85d39}.module-icon.teal,.recent-icon.teal{background:#187c85}.module-icon.blue{background:#315db3}.module-name{font-size:12px;white-space:nowrap}.module-track{height:9px;background:#1a2e51;border-radius:20px;overflow:hidden}.module-track i{height:100%;display:block;border-radius:20px;background:linear-gradient(90deg,#8b5bd0,#c084e8)}.module-row>b{font-size:12px;font-weight:500;text-align:right}.recent-card .section-head a{color:#b7c6e7;text-decoration:none;font-size:12px}.recent-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #1b3154;color:inherit;text-decoration:none}.recent-row:last-child{border:0}.recent-icon{width:35px;height:35px;flex:none}.recent-row>span:nth-child(2){flex:1;min-width:0}.recent-row b{display:block;font-size:12px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.recent-row small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.recent-row>i{font-size:12px;color:#aab8d2}.no-activity{color:var(--muted);font-size:12px;line-height:1.6;padding:24px 4px}.insights-bottom-grid{display:grid;grid-template-columns:1.2fr .9fr;gap:18px}.quote-card{min-height:150px;display:flex;align-items:center;justify-content:space-between;padding:20px 26px;position:relative;overflow:hidden;background:linear-gradient(110deg,#13264b,#0b1b3a)!important}.quote-mark{font-family:Georgia,serif;font-size:76px;color:#eab35e;line-height:1;align-self:flex-start}.quote-card p{font-family:Georgia,serif;font-size:19px;line-height:1.45;margin:0 0 10px;text-align:center}.quote-card small{display:block;text-align:right;color:#c5cee0;font-size:12px}.quote-doodle{font-size:48px;color:#d6a1bf;opacity:.8}.quick-card{padding:18px 22px}.quick-card h2{font-size:16px;margin-bottom:18px}.quick-links{display:flex;justify-content:space-around;gap:8px}.quick-links a{display:flex;flex-direction:column;align-items:center;gap:8px;color:#dce5f8;text-decoration:none;font-size:11px}.quick-links i{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:22px;color:#fff}.quick-links .violet{background:#7554c6}.quick-links .pink{background:#b14e91}.quick-links .orange{background:#d28b39}.quick-links .teal{background:#168b91}.quick-links .blue{background:#3b68c2}
+@media(max-width:1150px){.insights-top-grid{grid-template-columns:1fr}.insights-middle-grid{grid-template-columns:1fr 1fr}.recent-card{grid-column:1/-1}.insight-hero{min-height:300px}.hero-art img{min-height:300px}}@media(max-width:700px){.insight-hero{grid-template-columns:1fr}.hero-art img{height:220px;min-height:220px}.hero-score{padding:24px}.insights-middle-grid,.insights-bottom-grid{grid-template-columns:1fr}.recent-card{grid-column:auto}.quote-card p{font-size:15px}.quick-links{flex-wrap:wrap}}
+</style>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const el=document.getElementById('journeyChart'); if(!el)return;
+ const vals=JSON.parse(el.dataset.values||'[]'), labels=JSON.parse(el.dataset.labels||'[]');
+ const max=Math.max(1,...vals), w=700,h=205,left=20,right=680,top=18,bottom=170;
+ const pts=vals.map((v,i)=>({x:left+(vals.length===1?0:i*(right-left)/(vals.length-1)),y:bottom-(v/max)*(bottom-top)}));
+ const line=pts.map((p,i)=>(i?'L':'M')+p.x+','+p.y).join(' '); const area=line+` L ${right},${bottom} L ${left},${bottom} Z`;
+ const dots=pts.map((p,i)=>`<circle cx="${p.x}" cy="${p.y}" r="7" fill="#d28ae8" stroke="#f6c76c" stroke-width="2"/><text x="${p.x}" y="${p.y-17}" text-anchor="middle" fill="#f3f5ff" font-size="15">${vals[i]}</text><text x="${p.x}" y="198" text-anchor="middle" fill="#aab8d2" font-size="12">${labels[i]||''}</text>`).join('');
+ el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Daily CreatorOS activity for the last seven days"><defs><linearGradient id="journeyFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#d28ae8" stop-opacity=".48"/><stop offset="100%" stop-color="#d28ae8" stop-opacity=".02"/></linearGradient></defs><path d="${area}" fill="url(#journeyFill)"/><path d="${line}" fill="none" stroke="#d28ae8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${dots}</svg>`;
+});
+</script>
+{% endblock %}

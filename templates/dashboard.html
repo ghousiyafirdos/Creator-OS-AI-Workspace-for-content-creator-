@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% block title %}Launchpad | {{ app_title }}{% endblock %}
+{% block content %}
+<style>
+.activity-clickable{width:100%;border:0;text-align:left;background:transparent;font:inherit;color:inherit;cursor:pointer;position:relative;padding-right:28px;}
+.activity-clickable:hover{background:rgba(212,175,55,.07);border-radius:12px;}
+.activity-clickable>i{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--text-muted);}
+.activity-checklist-backdrop{position:fixed;inset:0;background:rgba(7,26,51,.48);display:none;align-items:center;justify-content:center;padding:20px;z-index:3000;}
+.activity-checklist-backdrop.open{display:flex;}
+.activity-checklist-modal{width:min(500px,100%);max-height:80vh;overflow:hidden;background:var(--bg-surface,#fff);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.activity-checklist-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:var(--navy-primary,#071A33);color:#fff;}
+.activity-checklist-head h3{margin:0;font-size:17px;}
+.activity-checklist-close{border:0;background:transparent;color:#fff;font-size:22px;cursor:pointer;}
+.activity-checklist-body{padding:16px;max-height:60vh;overflow:auto;}
+.activity-check-row{display:flex;align-items:flex-start;gap:10px;padding:11px 8px;border-bottom:1px solid var(--border-color,#e5e7eb);}
+.activity-check-row:last-child{border-bottom:0;}
+.activity-check-row input{margin-top:3px;accent-color:var(--accent-gold,#D4AF37);}
+.activity-check-copy strong{display:block;font-size:13px;}
+.activity-check-copy span{display:block;margin-top:3px;font-size:11px;color:var(--text-muted,#64748b);}
+.activity-check-empty{padding:28px 10px;text-align:center;color:var(--text-muted,#64748b);}
+</style>
+
+<div class="activity-checklist-backdrop" id="activityChecklistModal" aria-hidden="true">
+  <div class="activity-checklist-modal" role="dialog" aria-modal="true" aria-labelledby="activityChecklistTitle">
+    <div class="activity-checklist-head">
+      <h3 id="activityChecklistTitle">Activity</h3>
+      <button type="button" class="activity-checklist-close" onclick="closeActivityChecklist()" aria-label="Close">×</button>
+    </div>
+    <div class="activity-checklist-body" id="activityChecklistBody"></div>
+  </div>
+</div>
+
+<script>
+const creatorOSActivityData = {{ activity_data|tojson }};
+
+function openActivityChecklist(type){
+  const modal=document.getElementById('activityChecklistModal');
+  const body=document.getElementById('activityChecklistBody');
+  const title=document.getElementById('activityChecklistTitle');
+  const names={ai:'AI Generations',scheduled:'Scheduled Content',drafts:'Drafts',published:'Published Content'};
+  title.textContent=names[type]||'Activity';
+  const items=creatorOSActivityData[type]||[];
+  body.innerHTML=items.length ? items.map((item,index)=>`
+    <label class="activity-check-row">
+      <input type="checkbox" aria-label="${escapeActivity(item.title)}">
+      <span class="activity-check-copy"><strong>${escapeActivity(item.title)}</strong><span>${escapeActivity(item.meta)}</span></span>
+    </label>
+  `).join('') : '<div class="activity-check-empty">No items in this activity yet.</div>';
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+}
+function closeActivityChecklist(){
+  const modal=document.getElementById('activityChecklistModal');
+  if(!modal)return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+}
+function escapeActivity(value){
+  return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+}
+document.getElementById('activityChecklistModal')?.addEventListener('click',e=>{
+  if(e.target.id==='activityChecklistModal')closeActivityChecklist();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeActivityChecklist();});
+</script>
+
+<div class="cos-dashboard">
+  <section class="cos-hero">
+    <div class="cos-hero-art" aria-hidden="true"></div>
+    <div class="cos-hero-overlay"></div>
+    <div class="cos-hero-content">
+      <span class="cos-eyebrow"><i class="bi bi-stars"></i> LAUNCHPAD · YOUR CREATIVE HOME</span>
+      <h1>{{ greeting }}, {{ current_user.full_name.split(' ')[0] if current_user.is_authenticated else 'Creator' }}! <span>👋</span></h1>
+      <p>Your starting point for everything.</p>
+      <div class="cos-hero-actions">
+        <a href="{{ url_for('ai.workspace') }}" class="cos-hero-btn primary"><i class="bi bi-stars"></i><span><b>Create</b><small>Bring an idea to life</small></span></a>
+        <a href="{{ url_for('video_editor.editor') }}" class="cos-hero-btn"><i class="bi bi-film"></i><span><b>Edit</b><small>Make your content better</small></span></a>
+        <a href="{{ url_for('planner.calendar') }}" class="cos-hero-btn"><i class="bi bi-calendar3"></i><span><b>Plan</b><small>Organize what comes next</small></span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="cos-create-section">
+    <div class="cos-section-heading">
+      <div><span>START HERE</span><h2>What do you want to create?</h2></div>
+      <p>Pick a tool and jump straight into your work.</p>
+    </div>
+    <div class="cos-tool-grid">
+      <a href="{{ url_for('ai.workspace') }}" class="cos-tool-card purple">
+        <div class="cos-tool-art"><i class="bi bi-robot"></i><b>✦</b></div>
+        <div><h3>Idea Flow</h3><p>Turn your ideas into content.</p><span>Open Idea Flow <i class="bi bi-arrow-right"></i></span></div>
+      </a>
+      <a href="{{ url_for('video_editor.editor') }}" class="cos-tool-card pink">
+        <div class="cos-tool-art"><i class="bi bi-camera-reels"></i><b>▶</b></div>
+        <div><h3>Clip Nest</h3><p>Create and edit videos.</p><span>Open Clip Nest <i class="bi bi-arrow-right"></i></span></div>
+      </a>
+      <a href="{{ url_for('pick_perfect') }}" class="cos-tool-card orange">
+        <div class="cos-tool-art"><i class="bi bi-image"></i><b>✧</b></div>
+        <div><h3>Pick Perfect</h3><p>Edit and enhance your images.</p><span>Open Pick Perfect <i class="bi bi-arrow-right"></i></span></div>
+      </a>
+      <a href="{{ url_for('planner.calendar') }}" class="cos-tool-card mint">
+        <div class="cos-tool-art"><i class="bi bi-calendar-heart"></i><b>•</b></div>
+        <div><h3>Day Canvas</h3><p>Shape your plans and make room for every idea.</p><span>Open Day Canvas <i class="bi bi-arrow-right"></i></span></div>
+      </a>
+    </div>
+  </section>
+
+  <section class="cos-content-grid">
+    <div class="cos-main-column">
+      <section class="cos-panel cos-recent-panel">
+        <div class="cos-panel-head"><div><span>YOUR WORK</span><h2>Recent drafts</h2></div><a href="{{ url_for('drafts.manager') }}">View all <i class="bi bi-arrow-right"></i></a></div>
+        <div class="cos-draft-grid">
+          {% if draft_items %}
+            {% for draft in draft_items %}
+            <a href="{{ url_for('drafts.manager') }}" class="cos-draft-card">
+              <div class="cos-draft-thumb draft-{{ loop.index }}"><i class="bi {% if draft.file_type == 'video' %}bi-camera-video{% elif draft.file_type == 'image' %}bi-image{% else %}bi-file-earmark-text{% endif %}"></i></div>
+              <strong>{{ draft.title|truncate(28, True) }}</strong>
+              <small><i class="bi bi-clock"></i> {{ draft.updated_at.strftime('%b %d') if draft.updated_at else 'Recently' }}</small>
+            </a>
+            {% endfor %}
+          {% else %}
+            <a href="{{ url_for('ai.workspace') }}" class="cos-draft-card empty"><div class="cos-draft-thumb draft-1"><i class="bi bi-stars"></i></div><strong>Generate your first idea</strong><small>Start in Idea Flow</small></a>
+            <a href="{{ url_for('video_editor.editor') }}" class="cos-draft-card empty"><div class="cos-draft-thumb draft-2"><i class="bi bi-film"></i></div><strong>Create a video</strong><small>Open Clip Nest</small></a>
+            <a href="{{ url_for('pick_perfect') }}" class="cos-draft-card empty"><div class="cos-draft-thumb draft-3"><i class="bi bi-image"></i></div><strong>Make a visual</strong><small>Open Pick Perfect</small></a>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="cos-panel cos-hub-panel">
+        <div class="cos-hub-art"><div class="hub-orb">✦</div><i class="bi bi-stars"></i><i class="bi bi-chat-heart"></i></div>
+        <div class="cos-hub-copy"><span>YOUR AI COMPANION</span><h2>Nexus</h2><p>Ask CreatorOS for help with ideas, captions, scripts, content planning and other creator tasks.</p><a href="{{ url_for('ai.chatbot') }}" class="cos-hub-button">Open Nexus <i class="bi bi-arrow-right"></i></a></div>
+      </section>
+    </div>
+
+    <aside class="cos-side-column">
+      <section class="cos-panel cos-activity-panel">
+        <div class="cos-panel-head"><div><span>RECENT</span><h2>Activity</h2></div><span class="cos-live-dot">Live</span></div>
+        <div class="cos-activity-list">
+          <button type="button" class="cos-activity-item activity-clickable" onclick="openActivityChecklist('ai')">
+            <span class="activity-purple"><i class="bi bi-stars"></i></span><div><strong>{{ ai_count }} AI generations</strong><small>Click to view activity</small></div><i class="bi bi-chevron-right"></i>
+          </button>
+          <button type="button" class="cos-activity-item activity-clickable" onclick="openActivityChecklist('scheduled')">
+            <span class="activity-pink"><i class="bi bi-calendar-check"></i></span><div><strong>{{ scheduled_count }} scheduled</strong><small>Click to view scheduled content</small></div><i class="bi bi-chevron-right"></i>
+          </button>
+          <button type="button" class="cos-activity-item activity-clickable" onclick="openActivityChecklist('drafts')">
+            <span class="activity-mint"><i class="bi bi-folder2-open"></i></span><div><strong>{{ active_draft_count }} drafts</strong><small>Click to view drafts</small></div><i class="bi bi-chevron-right"></i>
+          </button>
+          <button type="button" class="cos-activity-item activity-clickable" onclick="openActivityChecklist('published')">
+            <span class="activity-orange"><i class="bi bi-check-circle"></i></span><div><strong>{{ published_count }} published</strong><small>Click to view published content</small></div><i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </section>
+
+      <section class="cos-panel cos-upcoming-panel">
+        <div class="cos-panel-head"><div><span>PLAN AHEAD</span><h2>Upcoming</h2></div><a href="{{ url_for('planner.calendar') }}" >Day Canvas <i class="bi bi-arrow-right"></i></a></div>
+        <div class="cos-upcoming-list">
+          {% if upcoming %}
+            {% for item in upcoming %}
+            <a href="{{ url_for('planner.calendar') }}" class="cos-upcoming-item"><span class="cos-date"><b>{{ item.scheduled_time.strftime('%d') }}</b><small>{{ item.scheduled_time.strftime('%b') }}</small></span><div><strong>{{ item.title|truncate(25, True) }}</strong><small>{{ item.scheduled_time.strftime('%I:%M %p') }}</small></div><i class="bi bi-chevron-right"></i></a>
+            {% endfor %}
+          {% else %}
+            <a href="{{ url_for('planner.calendar') }}" class="cos-empty-upcoming"><i class="bi bi-calendar-plus"></i><strong>Nothing scheduled yet</strong><span>Plan your next post</span></a>
+          {% endif %}
+        </div>
+      </section>
+    </aside>
+  </section>
+</div>
+<style>
+.activity-clickable{width:100%;border:0;text-align:left;background:transparent;font:inherit;color:inherit;cursor:pointer;position:relative;padding-right:28px;}
+.activity-clickable:hover{background:rgba(212,175,55,.07);border-radius:12px;}
+.activity-clickable>i{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--text-muted);}
+.activity-checklist-backdrop{position:fixed;inset:0;background:rgba(7,26,51,.48);display:none;align-items:center;justify-content:center;padding:20px;z-index:3000;}
+.activity-checklist-backdrop.open{display:flex;}
+.activity-checklist-modal{width:min(500px,100%);max-height:80vh;overflow:hidden;background:var(--bg-surface,#fff);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.activity-checklist-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:var(--navy-primary,#071A33);color:#fff;}
+.activity-checklist-head h3{margin:0;font-size:17px;}
+.activity-checklist-close{border:0;background:transparent;color:#fff;font-size:22px;cursor:pointer;}
+.activity-checklist-body{padding:16px;max-height:60vh;overflow:auto;}
+.activity-check-row{display:flex;align-items:flex-start;gap:10px;padding:11px 8px;border-bottom:1px solid var(--border-color,#e5e7eb);}
+.activity-check-row:last-child{border-bottom:0;}
+.activity-check-row input{margin-top:3px;accent-color:var(--accent-gold,#D4AF37);}
+.activity-check-copy strong{display:block;font-size:13px;}
+.activity-check-copy span{display:block;margin-top:3px;font-size:11px;color:var(--text-muted,#64748b);}
+.activity-check-empty{padding:28px 10px;text-align:center;color:var(--text-muted,#64748b);}
+</style>
+
+<div class="activity-checklist-backdrop" id="activityChecklistModal" aria-hidden="true">
+  <div class="activity-checklist-modal" role="dialog" aria-modal="true" aria-labelledby="activityChecklistTitle">
+    <div class="activity-checklist-head">
+      <h3 id="activityChecklistTitle">Activity</h3>
+      <button type="button" class="activity-checklist-close" onclick="closeActivityChecklist()" aria-label="Close">×</button>
+    </div>
+    <div class="activity-checklist-body" id="activityChecklistBody"></div>
+  </div>
+</div>
+
+<script>
+const creatorOSActivityData = {{ activity_data|tojson }};
+
+function openActivityChecklist(type){
+  const modal=document.getElementById('activityChecklistModal');
+  const body=document.getElementById('activityChecklistBody');
+  const title=document.getElementById('activityChecklistTitle');
+  const names={ai:'AI Generations',scheduled:'Scheduled Content',drafts:'Drafts',published:'Published Content'};
+  title.textContent=names[type]||'Activity';
+  const items=creatorOSActivityData[type]||[];
+  body.innerHTML=items.length ? items.map(item=>`
+    <label class="activity-check-row">
+      <input type="checkbox" aria-label="${escapeActivity(item.title)}">
+      <span class="activity-check-copy"><strong>${escapeActivity(item.title)}</strong><span>${escapeActivity(item.meta)}</span></span>
+    </label>
+  `).join('') : '<div class="activity-check-empty">No items in this activity yet.</div>';
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+}
+function closeActivityChecklist(){
+  const modal=document.getElementById('activityChecklistModal');
+  if(!modal)return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+}
+function escapeActivity(value){
+  return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+}
+document.getElementById('activityChecklistModal')?.addEventListener('click',e=>{
+  if(e.target.id==='activityChecklistModal')closeActivityChecklist();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeActivityChecklist();});
+</script>
+
+{% endblock %}
